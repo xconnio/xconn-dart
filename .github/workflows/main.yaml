@@ -1,0 +1,26 @@
+name: WAMP Dart
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.3.0
+
+      - name: Install dependencies
+        run: make install
+
+      - name: Verify formatting
+        run: make check-format
+
+      - name: Check lint
+        run: make lint
+
+      - name: Run tests
+        run: make tests
