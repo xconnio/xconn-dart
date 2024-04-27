@@ -1,1 +1,1 @@
-export "src/wamp_session_joiner.dart" show WAMPSessionJoiner;
+export "src/wsjoiner.dart" show WAMPSessionJoiner;
