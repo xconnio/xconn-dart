@@ -29,6 +29,30 @@ class Session {
     await _baseSession.close();
   }
 
+  final Map<int, Completer<Result>> _callRequests = {};
+
   void _processIncomingMessage(msg.Message message) {
+    if (message is msg.Result) {
+      var request = _callRequests.remove(message.requestID);
+      if (request != null) {
+        request.complete(Result(args: message.args, kwargs: message.kwargs, options: message.options));
+      }
+    }
+  }
+
+  Future<Result> call(
+    String procedure, {
+    List<dynamic>? args,
+    Map<String, dynamic>? kwargs,
+    Map<String, dynamic>? options,
+  }) {
+    var call = msg.Call(_nextID, procedure, args: args, kwargs: kwargs, options: options);
+
+    var completer = Completer<Result>();
+    _callRequests[call.requestID] = completer;
+
+    _baseSession.send(_wampSession.sendMessage(call));
+
+    return completer.future;
   }
 }

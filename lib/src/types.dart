@@ -24,3 +24,17 @@ class BaseSession {
     await _ws.close();
   }
 }
+
+class Result {
+  Result({
+    List<dynamic>? args,
+    Map<String, dynamic>? kwargs,
+    Map<String, dynamic>? options,
+  })  : args = args ?? [],
+        kwargs = kwargs ?? {},
+        options = options ?? {};
+
+  final List<dynamic> args;
+  final Map<String, dynamic> kwargs;
+  final Map<String, dynamic> options;
+}
