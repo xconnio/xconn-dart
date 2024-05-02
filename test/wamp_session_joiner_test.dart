@@ -1,7 +1,8 @@
 import "dart:typed_data";
 
 import "package:test/test.dart";
-import "package:wamp/src/wamp_session_joiner.dart";
+import "package:wamp/src/helpers.dart";
+import "package:wamp/src/wsjoiner.dart";
 import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
 
