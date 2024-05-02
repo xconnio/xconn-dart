@@ -34,6 +34,8 @@ class Session {
   final Map<int, Result Function(Invocation)> _registrations = {};
   final Map<int, UnregisterRequest> _unregisterRequests = {};
   final Map<int, Completer<Published>> _publishRequests = {};
+  final Map<int, SubscribeRequest> _subscribeRequests = {};
+  final Map<int, void Function(Event)> _subscriptions = {};
 
   void _processIncomingMessage(msg.Message message) {
     if (message is msg.Result) {
@@ -66,6 +68,17 @@ class Session {
       var request = _publishRequests.remove(message.requestID);
       if (request != null) {
         request.complete(Published());
+      }
+    } else if (message is msg.Subscribed) {
+      var request = _subscribeRequests.remove(message.requestID);
+      if (request != null) {
+        _subscriptions[message.subscriptionID] = request.endpoint;
+        request.future.complete(Subscription(message.subscriptionID));
+      }
+    } else if (message is msg.Event) {
+      var endpoint = _subscriptions[message.subscriptionID];
+      if (endpoint != null) {
+        endpoint(Event(args: message.args, kwargs: message.kwargs, options: message.options));
       }
     }
   }
@@ -125,5 +138,15 @@ class Session {
     }
 
     return null;
+  }
+
+  Future<Subscription> subscribe(String topic, void Function(Event) endpoint) {
+    var subscribe = msg.Subscribe(_nextID, topic);
+
+    var completer = Completer<Subscription>();
+    _subscribeRequests[subscribe.requestID] = SubscribeRequest(completer, endpoint);
+    _baseSession.send(_wampSession.sendMessage(subscribe));
+
+    return completer.future;
   }
 }

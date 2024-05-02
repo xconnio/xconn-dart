@@ -74,3 +74,30 @@ class UnregisterRequest {
 }
 
 class Published {}
+
+class Subscription {
+  Subscription(this.subscriptionId);
+
+  final int subscriptionId;
+}
+
+class SubscribeRequest {
+  SubscribeRequest(this.future, this.endpoint);
+
+  final Completer<Subscription> future;
+  final void Function(Event) endpoint;
+}
+
+class Event {
+  Event({
+    List<dynamic>? args,
+    Map<String, dynamic>? kwargs,
+    Map<String, dynamic>? options,
+  })  : args = args ?? [],
+        kwargs = kwargs ?? {},
+        options = options ?? {};
+
+  final List<dynamic> args;
+  final Map<String, dynamic> kwargs;
+  final Map<String, dynamic> options;
+}
