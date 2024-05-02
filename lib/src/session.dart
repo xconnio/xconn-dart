@@ -30,12 +30,29 @@ class Session {
   }
 
   final Map<int, Completer<Result>> _callRequests = {};
+  final Map<int, RegisterRequest> _registerRequests = {};
+  final Map<int, Result Function(Invocation)> _registrations = {};
 
   void _processIncomingMessage(msg.Message message) {
     if (message is msg.Result) {
       var request = _callRequests.remove(message.requestID);
       if (request != null) {
         request.complete(Result(args: message.args, kwargs: message.kwargs, options: message.options));
+      }
+    } else if (message is msg.Registered) {
+      var request = _registerRequests.remove(message.requestID);
+      if (request != null) {
+        _registrations[message.registrationID] = request.endpoint;
+        request.future.complete(Registration(message.registrationID));
+      }
+    } else if (message is msg.Invocation) {
+      var endpoint = _registrations[message.registrationID];
+      if (endpoint != null) {
+        Result result = endpoint(Invocation(args: message.args, kwargs: message.kwargs, options: message.options));
+        Uint8List data = _wampSession.sendMessage(
+          msg.Yield(message.requestID, args: result.args, kwargs: result.kwargs, options: result.options),
+        );
+        _baseSession.send(data);
       }
     }
   }
@@ -52,6 +69,17 @@ class Session {
     _callRequests[call.requestID] = completer;
 
     _baseSession.send(_wampSession.sendMessage(call));
+
+    return completer.future;
+  }
+
+  Future<Registration> register(String procedure, Result Function(Invocation) endpoint) {
+    var register = msg.Register(_nextID, procedure);
+
+    var completer = Completer<Registration>();
+    _registerRequests[register.requestID] = RegisterRequest(completer, endpoint);
+
+    _baseSession.send(_wampSession.sendMessage(register));
 
     return completer.future;
   }
