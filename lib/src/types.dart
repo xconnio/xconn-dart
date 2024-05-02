@@ -1,8 +1,13 @@
 import "dart:async";
 import "dart:io";
+import "dart:html";
+import "dart:typed_data";
 
 import "package:wampproto/serializers.dart";
 import "package:wampproto/session.dart";
+import "package:wampproto/messages.dart";
+
+
 
 class BaseSession {
   BaseSession(this._ws, this._wsStreamController, this.sessionDetails, this.serializer);
@@ -105,4 +110,40 @@ class UnsubscribeRequest {
 
   final Completer<void> future;
   final int subscriptionId;
+}
+
+abstract class IBaseSession {
+  late final WebSocket ws;
+
+  int id() {
+    throw UnimplementedError();
+  }
+
+  String realm() {
+    throw UnimplementedError();
+  }
+
+  String authid() {
+    throw UnimplementedError();
+  }
+
+  String authrole() {
+    throw UnimplementedError();
+  }
+
+  void send(Uint8List data) {
+    throw UnimplementedError();
+  }
+
+  Uint8List receive() {
+    throw UnimplementedError();
+  }
+
+  void sendMessage(Message msg) {
+    throw UnimplementedError();
+  }
+
+  Message receiveMessage() {
+    throw UnimplementedError();
+  }
 }
