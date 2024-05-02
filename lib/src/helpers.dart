@@ -1,4 +1,5 @@
 import "package:wamp/src/wsjoiner.dart";
+import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
 
 String getSubProtocol(Serializer serializer) {
@@ -11,4 +12,17 @@ String getSubProtocol(Serializer serializer) {
   } else {
     throw ArgumentError("invalid serializer");
   }
+}
+
+String wampErrorString(Error err) {
+  String errStr = err.uri;
+  if (err.args.isNotEmpty) {
+    String args = err.args.map((arg) => arg.toString()).join(", ");
+    errStr += ": $args";
+  }
+  if (err.kwargs.isNotEmpty) {
+    String kwargs = err.kwargs.entries.map((entry) => "${entry.key}=${entry.value}").join(", ");
+    errStr += ": $kwargs";
+  }
+  return errStr;
 }

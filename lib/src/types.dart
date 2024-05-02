@@ -29,14 +29,14 @@ class Result {
   Result({
     List<dynamic>? args,
     Map<String, dynamic>? kwargs,
-    Map<String, dynamic>? options,
+    Map<String, dynamic>? details,
   })  : args = args ?? [],
         kwargs = kwargs ?? {},
-        options = options ?? {};
+        details = details ?? {};
 
   final List<dynamic> args;
   final Map<String, dynamic> kwargs;
-  final Map<String, dynamic> options;
+  final Map<String, dynamic> details;
 }
 
 class Registration {
@@ -56,14 +56,14 @@ class Invocation {
   Invocation({
     List<dynamic>? args,
     Map<String, dynamic>? kwargs,
-    Map<String, dynamic>? options,
+    Map<String, dynamic>? details,
   })  : args = args ?? [],
         kwargs = kwargs ?? {},
-        options = options ?? {};
+        details = details ?? {};
 
   final List<dynamic> args;
   final Map<String, dynamic> kwargs;
-  final Map<String, dynamic> options;
+  final Map<String, dynamic> details;
 }
 
 class UnregisterRequest {
@@ -72,8 +72,6 @@ class UnregisterRequest {
   final Completer<void> future;
   final int registrationID;
 }
-
-class Published {}
 
 class Subscription {
   Subscription(this.subscriptionId);
@@ -92,14 +90,14 @@ class Event {
   Event({
     List<dynamic>? args,
     Map<String, dynamic>? kwargs,
-    Map<String, dynamic>? options,
+    Map<String, dynamic>? details,
   })  : args = args ?? [],
         kwargs = kwargs ?? {},
-        options = options ?? {};
+        details = details ?? {};
 
   final List<dynamic> args;
   final Map<String, dynamic> kwargs;
-  final Map<String, dynamic> options;
+  final Map<String, dynamic> details;
 }
 
 class UnsubscribeRequest {
