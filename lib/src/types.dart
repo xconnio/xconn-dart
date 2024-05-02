@@ -65,3 +65,10 @@ class Invocation {
   final Map<String, dynamic> kwargs;
   final Map<String, dynamic> options;
 }
+
+class UnregisterRequest {
+  UnregisterRequest(this.future, this.registrationID);
+
+  final Completer<void> future;
+  final int registrationID;
+}

@@ -32,6 +32,7 @@ class Session {
   final Map<int, Completer<Result>> _callRequests = {};
   final Map<int, RegisterRequest> _registerRequests = {};
   final Map<int, Result Function(Invocation)> _registrations = {};
+  final Map<int, UnregisterRequest> _unregisterRequests = {};
 
   void _processIncomingMessage(msg.Message message) {
     if (message is msg.Result) {
@@ -53,6 +54,12 @@ class Session {
           msg.Yield(message.requestID, args: result.args, kwargs: result.kwargs, options: result.options),
         );
         _baseSession.send(data);
+      }
+    } else if (message is msg.UnRegistered) {
+      var request = _unregisterRequests.remove(message.requestID);
+      if (request != null) {
+        _registrations.remove(request.registrationID);
+        request.future.complete();
       }
     }
   }
@@ -80,6 +87,17 @@ class Session {
     _registerRequests[register.requestID] = RegisterRequest(completer, endpoint);
 
     _baseSession.send(_wampSession.sendMessage(register));
+
+    return completer.future;
+  }
+
+  Future<void> unregister(Registration reg) {
+    var unregister = msg.UnRegister(_nextID, reg.registrationID);
+
+    var completer = Completer();
+    _unregisterRequests[unregister.requestID] = UnregisterRequest(completer, reg.registrationID);
+
+    _baseSession.send(_wampSession.sendMessage(unregister));
 
     return completer.future;
   }
