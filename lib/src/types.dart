@@ -72,3 +72,5 @@ class UnregisterRequest {
   final Completer<void> future;
   final int registrationID;
 }
+
+class Published {}

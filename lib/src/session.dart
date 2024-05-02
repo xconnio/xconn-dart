@@ -33,6 +33,7 @@ class Session {
   final Map<int, RegisterRequest> _registerRequests = {};
   final Map<int, Result Function(Invocation)> _registrations = {};
   final Map<int, UnregisterRequest> _unregisterRequests = {};
+  final Map<int, Completer<Published>> _publishRequests = {};
 
   void _processIncomingMessage(msg.Message message) {
     if (message is msg.Result) {
@@ -60,6 +61,11 @@ class Session {
       if (request != null) {
         _registrations.remove(request.registrationID);
         request.future.complete();
+      }
+    } else if (message is msg.Published) {
+      var request = _publishRequests.remove(message.requestID);
+      if (request != null) {
+        request.complete(Published());
       }
     }
   }
@@ -100,5 +106,24 @@ class Session {
     _baseSession.send(_wampSession.sendMessage(unregister));
 
     return completer.future;
+  }
+
+  Future<Published>? publish(
+    String topic, {
+    List<dynamic>? args,
+    Map<String, dynamic>? kwargs,
+    Map<String, dynamic>? options,
+  }) {
+    var publish = msg.Publish(_nextID, topic, args: args, kwargs: kwargs, options: options);
+
+    var completer = Completer<Published>();
+    _publishRequests[publish.requestID] = completer;
+    _baseSession.send(_wampSession.sendMessage(publish));
+
+    if (options != null && options["acknowledge"]) {
+      return completer.future;
+    }
+
+    return null;
   }
 }
