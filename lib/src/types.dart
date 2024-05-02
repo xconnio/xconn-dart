@@ -101,3 +101,10 @@ class Event {
   final Map<String, dynamic> kwargs;
   final Map<String, dynamic> options;
 }
+
+class UnsubscribeRequest {
+  UnsubscribeRequest(this.future, this.subscriptionId);
+
+  final Completer<void> future;
+  final int subscriptionId;
+}

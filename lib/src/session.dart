@@ -36,6 +36,7 @@ class Session {
   final Map<int, Completer<Published>> _publishRequests = {};
   final Map<int, SubscribeRequest> _subscribeRequests = {};
   final Map<int, void Function(Event)> _subscriptions = {};
+  final Map<int, UnsubscribeRequest> _unsubscribeRequests = {};
 
   void _processIncomingMessage(msg.Message message) {
     if (message is msg.Result) {
@@ -79,6 +80,12 @@ class Session {
       var endpoint = _subscriptions[message.subscriptionID];
       if (endpoint != null) {
         endpoint(Event(args: message.args, kwargs: message.kwargs, options: message.options));
+      }
+    } else if (message is msg.UnSubscribed) {
+      var request = _unsubscribeRequests.remove(message.requestID);
+      if (request != null) {
+        _subscriptions.remove(request.subscriptionId);
+        request.future.complete();
       }
     }
   }
@@ -146,6 +153,16 @@ class Session {
     var completer = Completer<Subscription>();
     _subscribeRequests[subscribe.requestID] = SubscribeRequest(completer, endpoint);
     _baseSession.send(_wampSession.sendMessage(subscribe));
+
+    return completer.future;
+  }
+
+  Future<void> unsubscribe(Subscription sub) {
+    var unsubscribe = msg.UnSubscribe(_nextID, sub.subscriptionId);
+
+    var completer = Completer<void>();
+    _unsubscribeRequests[unsubscribe.requestID] = UnsubscribeRequest(completer, sub.subscriptionId);
+    _baseSession.send(_wampSession.sendMessage(unsubscribe));
 
     return completer.future;
   }
