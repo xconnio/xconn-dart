@@ -30,7 +30,6 @@ class Server {
         var message = await baseSession.receive();
         var decodedMessage = Uint8List.fromList((message as String).codeUnits);
         var msg = baseSession.serializer.deserialize(decodedMessage);
-        print(msg.marshal());
         await router.receiveMessage(baseSession, msg);
       }
     });
