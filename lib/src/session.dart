@@ -5,6 +5,7 @@ import "package:wamp/src/helpers.dart";
 import "package:wamp/src/types.dart";
 import "package:wampproto/idgen.dart";
 import "package:wampproto/messages.dart" as msg;
+import "package:wampproto/serializers.dart";
 import "package:wampproto/session.dart";
 
 class Session {
@@ -13,7 +14,12 @@ class Session {
     Future.microtask(() async {
       while (true) {
         var message = await _baseSession.receive();
-        var decodedMessage = Uint8List.fromList((message as String).codeUnits);
+        Uint8List decodedMessage;
+        if (_baseSession.serializer == JSONSerializer()) {
+          decodedMessage = Uint8List.fromList((message as String).codeUnits);
+        } else {
+          decodedMessage = message as Uint8List;
+        }
         _processIncomingMessage(_wampSession.receive(decodedMessage));
       }
     });
