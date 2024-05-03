@@ -1,15 +1,50 @@
 import "dart:async";
 import "dart:io";
-import "dart:html";
 import "dart:typed_data";
 
+import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
 import "package:wampproto/session.dart";
-import "package:wampproto/messages.dart";
 
+abstract class IBaseSession {
+  int id() {
+    throw UnimplementedError();
+  }
 
+  String realm() {
+    throw UnimplementedError();
+  }
 
-class BaseSession {
+  String authid() {
+    throw UnimplementedError();
+  }
+
+  String authrole() {
+    throw UnimplementedError();
+  }
+
+  void send(Uint8List data) {
+    throw UnimplementedError();
+  }
+
+  Future<Object> receive() async {
+    throw UnimplementedError();
+  }
+
+  void sendMessage(Message msg) {
+    throw UnimplementedError();
+  }
+
+  Future<Message> receiveMessage() async {
+    throw UnimplementedError();
+  }
+
+  Future<void> close() async {
+    throw UnimplementedError();
+  }
+}
+
+class BaseSession extends IBaseSession {
   BaseSession(this._ws, this._wsStreamController, this.sessionDetails, this.serializer);
 
   final WebSocket _ws;
@@ -17,14 +52,48 @@ class BaseSession {
   SessionDetails sessionDetails;
   Serializer serializer;
 
+  @override
+  int id() {
+    return sessionDetails.sessionID;
+  }
+
+  @override
+  String realm() {
+    return sessionDetails.realm;
+  }
+
+  @override
+  String authid() {
+    return sessionDetails.authid;
+  }
+
+  @override
+  String authrole() {
+    return sessionDetails.authrole;
+  }
+
+  @override
   void send(Object data) {
     _ws.add(data);
   }
 
+  @override
+  void sendMessage(Message msg) {
+    send(serializer.serialize(msg));
+  }
+
+  @override
   Future<Object> receive() async {
     return await _wsStreamController.stream.first;
   }
 
+  @override
+  Future<Message> receiveMessage() async {
+    var data = receive();
+    return serializer.deserialize(Uint8List.fromList((data as String).codeUnits));
+  }
+
+  @override
   Future<void> close() async {
     await _ws.close();
   }
@@ -79,9 +148,9 @@ class UnregisterRequest {
 }
 
 class Subscription {
-  Subscription(this.subscriptionId);
+  Subscription(this.subscriptionID);
 
-  final int subscriptionId;
+  final int subscriptionID;
 }
 
 class SubscribeRequest {
@@ -110,40 +179,4 @@ class UnsubscribeRequest {
 
   final Completer<void> future;
   final int subscriptionId;
-}
-
-abstract class IBaseSession {
-  late final WebSocket ws;
-
-  int id() {
-    throw UnimplementedError();
-  }
-
-  String realm() {
-    throw UnimplementedError();
-  }
-
-  String authid() {
-    throw UnimplementedError();
-  }
-
-  String authrole() {
-    throw UnimplementedError();
-  }
-
-  void send(Uint8List data) {
-    throw UnimplementedError();
-  }
-
-  Uint8List receive() {
-    throw UnimplementedError();
-  }
-
-  void sendMessage(Message msg) {
-    throw UnimplementedError();
-  }
-
-  Message receiveMessage() {
-    throw UnimplementedError();
-  }
 }

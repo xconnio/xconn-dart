@@ -35,12 +35,12 @@ class Router {
     realms[realm]?.detachClient(baseSession);
   }
 
-  void receiveMessage(IBaseSession baseSession, Message msg) {
+  Future<void> receiveMessage(IBaseSession baseSession, Message msg) async {
     String realm = baseSession.realm();
     if (!realms.containsKey(realm)) {
       throw Exception("cannot process message for non-existent realm $realm");
     }
 
-    realms[realm]?.receiveMessage(baseSession.id(), msg);
+    await realms[realm]?.receiveMessage(baseSession.id(), msg);
   }
 }
