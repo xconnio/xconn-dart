@@ -19,13 +19,13 @@ class Server {
       BaseSession baseSession = await a.accept(webSocket);
       router.attachClient(baseSession);
 
-      _handleWebSocket(baseSession);
+      _handleWebSocket(baseSession, webSocket);
     }
   }
 
-  void _handleWebSocket(BaseSession baseSession) {
+  void _handleWebSocket(BaseSession baseSession, WebSocket webSocket) {
     Future.microtask(() async {
-      while (true) {
+      while (webSocket.closeCode == null) {
         var message = await baseSession.receiveMessage();
         await router.receiveMessage(baseSession, message);
       }
