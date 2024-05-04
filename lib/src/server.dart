@@ -28,8 +28,7 @@ class Server {
     Future.microtask(() async {
       while (true) {
         var message = await baseSession.receive();
-        var decodedMessage = Uint8List.fromList((message as String).codeUnits);
-        var msg = baseSession.serializer.deserialize(decodedMessage);
+        var msg = baseSession.serializer.deserialize(message);
         await router.receiveMessage(baseSession, msg);
       }
     });

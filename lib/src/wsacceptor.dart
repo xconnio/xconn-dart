@@ -29,14 +29,7 @@ class WAMPSessionAcceptor {
     final sessionStreamController = StreamController.broadcast();
 
     wsStreamSubscription = ws.listen((message) {
-      dynamic data;
-      if (getSubProtocol(_serializer) == jsonSubProtocol) {
-        data = Uint8List.fromList((message as String).codeUnits);
-      } else {
-        data = message;
-      }
-
-      MapEntry<Uint8List, bool> received = a.receive(data);
+      MapEntry<Object, bool> received = a.receive(message);
       ws.add(received.key);
       if (received.value) {
         wsStreamSubscription.onData(sessionStreamController.add);
