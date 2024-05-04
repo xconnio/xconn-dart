@@ -13,7 +13,7 @@ class TestSerializer implements Serializer {
   }
 
   @override
-  Message deserialize(final Uint8List message) {
+  Message deserialize(final Object message) {
     return Hello("realm", {}, "", []);
   }
 }
