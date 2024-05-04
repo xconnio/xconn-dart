@@ -1,6 +1,5 @@
 import "dart:async";
 import "dart:io";
-import "dart:typed_data";
 
 import "package:wamp/src/helpers.dart";
 import "package:wamp/src/types.dart";
@@ -34,12 +33,7 @@ class WAMPSessionJoiner {
     final sessionStreamController = StreamController.broadcast();
 
     wsStreamSubscription = ws.listen((event) {
-      dynamic toSend;
-      if (getSubProtocol(_serializer) == jsonSubProtocol) {
-        toSend = joiner.receive(Uint8List.fromList((event as String).codeUnits));
-      } else {
-        toSend = joiner.receive(event);
-      }
+      dynamic toSend = joiner.receive(event);
       if (toSend == null) {
         wsStreamSubscription.onData(sessionStreamController.add);
 
