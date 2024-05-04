@@ -26,9 +26,8 @@ class Server {
   void _handleWebSocket(BaseSession baseSession) {
     Future.microtask(() async {
       while (true) {
-        var message = await baseSession.receive();
-        var msg = baseSession.serializer.deserialize(message);
-        await router.receiveMessage(baseSession, msg);
+        var message = await baseSession.receiveMessage();
+        await router.receiveMessage(baseSession, message);
       }
     });
   }

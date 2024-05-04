@@ -89,8 +89,7 @@ class BaseSession extends IBaseSession {
 
   @override
   Future<Message> receiveMessage() async {
-    var data = receive();
-    return serializer.deserialize(Uint8List.fromList((data as String).codeUnits));
+    return serializer.deserialize(await receive());
   }
 
   @override
