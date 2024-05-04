@@ -11,8 +11,8 @@ class Server {
 
   Router router;
 
-  Future<void> websocketHandler() async {
-    var server = await HttpServer.bind(InternetAddress.anyIPv4, 8080);
+  Future<void> start(String host, int port) async {
+    var server = await HttpServer.bind(host, port);
 
     await for (final request in server) {
       var webSocket = await WebSocketTransformer.upgrade(request);
@@ -20,11 +20,11 @@ class Server {
       BaseSession baseSession = await a.accept(webSocket);
       router.attachClient(baseSession);
 
-      handleWebSocket(baseSession);
+      _handleWebSocket(baseSession);
     }
   }
 
-  void handleWebSocket(BaseSession baseSession) {
+  void _handleWebSocket(BaseSession baseSession) {
     Future.microtask(() async {
       while (true) {
         var message = await baseSession.receive();
