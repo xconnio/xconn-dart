@@ -1,8 +1,6 @@
 import "dart:async";
 import "dart:io";
-import "dart:typed_data";
 
-import "package:wamp/src/helpers.dart";
 import "package:wamp/src/types.dart";
 import "package:wampproto/acceptor.dart";
 import "package:wampproto/auth.dart";

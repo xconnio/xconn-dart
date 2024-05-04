@@ -1,6 +1,5 @@
 import "dart:async";
 import "dart:io";
-import "dart:typed_data";
 
 import "package:wamp/exports.dart";
 import "package:wamp/src/types.dart";
