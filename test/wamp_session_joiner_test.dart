@@ -2,7 +2,6 @@ import "dart:typed_data";
 
 import "package:test/test.dart";
 import "package:wamp/src/helpers.dart";
-import "package:wamp/src/wsjoiner.dart";
 import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
 
@@ -21,17 +20,17 @@ class TestSerializer implements Serializer {
 void main() {
   test("jsonSubProtocol", () {
     var result = getSubProtocol(JSONSerializer());
-    expect(result, equals(WAMPSessionJoiner.jsonSubProtocol));
+    expect(result, equals(jsonSubProtocol));
   });
 
   test("cborSubProtocol", () {
     var result = getSubProtocol(CBORSerializer());
-    expect(result, equals(WAMPSessionJoiner.cborSubProtocol));
+    expect(result, equals(cborSubProtocol));
   });
 
   test("msgpackSubProtocol", () {
     var result = getSubProtocol(MsgPackSerializer());
-    expect(result, equals(WAMPSessionJoiner.msgpackSubProtocol));
+    expect(result, equals(msgpackSubProtocol));
   });
 
   test("invalidSerializer", () {

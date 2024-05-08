@@ -1,14 +1,17 @@
-import "package:wamp/src/wsjoiner.dart";
 import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
 
+const String jsonSubProtocol = "wamp.2.json";
+const String cborSubProtocol = "wamp.2.cbor";
+const String msgpackSubProtocol = "wamp.2.msgpack";
+
 String getSubProtocol(Serializer serializer) {
   if (serializer is JSONSerializer) {
-    return WAMPSessionJoiner.jsonSubProtocol;
+    return jsonSubProtocol;
   } else if (serializer is CBORSerializer) {
-    return WAMPSessionJoiner.cborSubProtocol;
+    return cborSubProtocol;
   } else if (serializer is MsgPackSerializer) {
-    return WAMPSessionJoiner.msgpackSubProtocol;
+    return msgpackSubProtocol;
   } else {
     throw ArgumentError("invalid serializer");
   }
@@ -25,4 +28,16 @@ String wampErrorString(Error err) {
     errStr += ": $kwargs";
   }
   return errStr;
+}
+
+Serializer getSerializer(String? subprotocol) {
+  if (subprotocol == null || subprotocol == jsonSubProtocol) {
+    return JSONSerializer();
+  } else if (subprotocol == cborSubProtocol) {
+    return CBORSerializer();
+  } else if (subprotocol == msgpackSubProtocol) {
+    return MsgPackSerializer();
+  } else {
+    throw Exception("invalid websocket subprotocol $subprotocol");
+  }
 }

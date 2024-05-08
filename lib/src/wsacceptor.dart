@@ -1,25 +1,23 @@
 import "dart:async";
 import "dart:io";
 
+import "package:wamp/src/helpers.dart";
 import "package:wamp/src/types.dart";
 import "package:wampproto/acceptor.dart";
 import "package:wampproto/auth.dart";
 import "package:wampproto/serializers.dart";
 
 class WAMPSessionAcceptor {
-  WAMPSessionAcceptor({IServerAuthenticator? authenticator, Serializer? serializer}) {
-    _serializer = serializer ?? JSONSerializer();
+  WAMPSessionAcceptor({IServerAuthenticator? authenticator}) {
     _authenticator = authenticator;
   }
 
   IServerAuthenticator? _authenticator;
   late Serializer _serializer;
-  static const String jsonSubProtocol = "wamp.2.json";
-  static const String cborSubProtocol = "wamp.2.cbor";
-  static const String msgpackSubProtocol = "wamp.2.msgpack";
 
   Future<BaseSession> accept(WebSocket ws) async {
-    Acceptor a = Acceptor(serializer: _serializer, authenticator: _authenticator);
+    _serializer = getSerializer(ws.protocol);
+    Acceptor acceptor = Acceptor(serializer: _serializer, authenticator: _authenticator);
 
     Completer<BaseSession> completer = Completer<BaseSession>();
 
@@ -27,11 +25,11 @@ class WAMPSessionAcceptor {
     final sessionStreamController = StreamController.broadcast();
 
     wsStreamSubscription = ws.listen((message) {
-      MapEntry<Object, bool> received = a.receive(message);
+      MapEntry<Object, bool> received = acceptor.receive(message);
       ws.add(received.key);
       if (received.value) {
         wsStreamSubscription.onData(sessionStreamController.add);
-        completer.complete(BaseSession(ws, sessionStreamController, a.getSessionDetails(), _serializer));
+        completer.complete(BaseSession(ws, sessionStreamController, acceptor.getSessionDetails(), _serializer));
         return;
       }
     });
