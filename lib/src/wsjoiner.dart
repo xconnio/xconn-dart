@@ -1,11 +1,12 @@
 import "dart:async";
 import "dart:io";
 
-import "package:wamp/src/helpers.dart";
-import "package:wamp/src/types.dart";
 import "package:wampproto/auth.dart";
 import "package:wampproto/joiner.dart";
 import "package:wampproto/serializers.dart";
+
+import "package:xconn/src/helpers.dart";
+import "package:xconn/src/types.dart";
 
 class WAMPSessionJoiner {
   WAMPSessionJoiner({IClientAuthenticator? authenticator, Serializer? serializer}) {

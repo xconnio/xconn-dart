@@ -1,8 +1,9 @@
-import "package:wamp/src/session.dart";
-import "package:wamp/src/types.dart";
-import "package:wamp/src/wsjoiner.dart";
 import "package:wampproto/auth.dart";
 import "package:wampproto/serializers.dart";
+
+import "package:xconn/src/session.dart";
+import "package:xconn/src/types.dart";
+import "package:xconn/src/wsjoiner.dart";
 
 class Client {
   Client({IClientAuthenticator? authenticator, Serializer? serializer}) {

@@ -1,8 +1,9 @@
-import "package:wamp/src/types.dart";
 import "package:wampproto/broker.dart";
 import "package:wampproto/dealer.dart";
 import "package:wampproto/messages.dart";
 import "package:wampproto/types.dart";
+
+import "package:xconn/src/types.dart";
 
 class Realm {
   final Dealer _dealer = Dealer();
@@ -28,10 +29,14 @@ class Realm {
 
   Future<void> receiveMessage(int sessionID, Message msg) async {
     switch (msg.messageType()) {
-      case Call.id || Yield.id || Register.id || UnRegister.id:
+      case Call.id:
+      case Yield.id:
+      case Register.id:
+      case UnRegister.id:
         MessageWithRecipient recipient = _dealer.receiveMessage(sessionID, msg);
         var client = _clients[recipient.recipient];
         client?.sendMessage(recipient.message);
+        break;
 
       case Publish.id:
         List<MessageWithRecipient>? recipients = _broker.receiveMessage(sessionID, msg);
@@ -44,7 +49,10 @@ class Realm {
           client?.sendMessage(recipient.message);
         }
 
-      case Subscribe.id || UnSubscribe.id:
+        break;
+
+      case Subscribe.id:
+      case UnSubscribe.id:
         List<MessageWithRecipient>? recipients = _broker.receiveMessage(sessionID, msg);
         if (recipients == null) {
           throw Exception("recipients null");
@@ -52,6 +60,7 @@ class Realm {
         MessageWithRecipient recipient = recipients[0];
         var client = _clients[recipient.recipient];
         client?.sendMessage(recipient.message);
+        break;
 
       case Goodbye.id:
         _dealer.removeSession(sessionID);
@@ -59,6 +68,7 @@ class Realm {
         var client = _clients[sessionID];
         await client?.close();
         _clients.remove(sessionID);
+        break;
     }
   }
 }

@@ -1,10 +1,11 @@
 import "dart:async";
 
-import "package:wamp/src/helpers.dart";
-import "package:wamp/src/types.dart";
 import "package:wampproto/idgen.dart";
 import "package:wampproto/messages.dart" as msg;
 import "package:wampproto/session.dart";
+
+import "package:xconn/src/helpers.dart";
+import "package:xconn/src/types.dart";
 
 class Session {
   Session(this._baseSession) {
@@ -90,18 +91,23 @@ class Session {
       switch (message.msgType) {
         case msg.Call.id:
           _callRequests.remove(message.requestID);
+          break;
 
         case msg.Register.id:
           _registerRequests.remove(message.requestID);
+          break;
 
         case msg.UnRegister.id:
           _unregisterRequests.remove(message.requestID);
+          break;
 
         case msg.Subscribe.id:
           _subscribeRequests.remove(message.requestID);
+          break;
 
         case msg.UnSubscribe.id:
           _unsubscribeRequests.remove(message.requestID);
+          break;
 
         case msg.Publish.id:
           _publishRequests.remove(message.requestID);
