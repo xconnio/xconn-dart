@@ -2,9 +2,9 @@ import "dart:async";
 import "dart:io";
 
 import "package:xconn/exports.dart";
+import "package:xconn/src/acceptor.dart";
 import "package:xconn/src/helpers.dart";
 import "package:xconn/src/types.dart";
-import "package:xconn/src/wsacceptor.dart";
 
 class Server {
   Server(this._router);
