@@ -13,10 +13,6 @@ class WAMPSessionJoiner {
     _authenticator = authenticator;
   }
 
-  static const String jsonSubProtocol = "wamp.2.json";
-  static const String cborSubProtocol = "wamp.2.cbor";
-  static const String msgpackSubProtocol = "wamp.2.msgpack";
-
   IClientAuthenticator? _authenticator;
   late Serializer _serializer;
 

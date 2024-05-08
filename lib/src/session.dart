@@ -179,10 +179,10 @@ class Session {
   }
 
   Future<void> unsubscribe(Subscription sub) {
-    var unsubscribe = msg.UnSubscribe(_nextID, sub.subscriptionId);
+    var unsubscribe = msg.UnSubscribe(_nextID, sub.subscriptionID);
 
     var completer = Completer<void>();
-    _unsubscribeRequests[unsubscribe.requestID] = UnsubscribeRequest(completer, sub.subscriptionId);
+    _unsubscribeRequests[unsubscribe.requestID] = UnsubscribeRequest(completer, sub.subscriptionID);
     _baseSession.send(_wampSession.sendMessage(unsubscribe));
 
     return completer.future;
