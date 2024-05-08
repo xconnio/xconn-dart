@@ -7,9 +7,9 @@ import "package:wamp/src/types.dart";
 import "package:wamp/src/wsacceptor.dart";
 
 class Server {
-  Server(this.router);
+  Server(this._router);
 
-  Router router;
+  final Router _router;
 
   List<String> supportedProtocols = [jsonSubProtocol, cborSubProtocol, msgpackSubProtocol];
 
@@ -42,7 +42,7 @@ class Server {
 
       WAMPSessionAcceptor acceptor = WAMPSessionAcceptor();
       BaseSession baseSession = await acceptor.accept(webSocket);
-      router.attachClient(baseSession);
+      _router.attachClient(baseSession);
 
       _handleWebSocket(baseSession, webSocket);
     }
@@ -52,7 +52,7 @@ class Server {
     Future.microtask(() async {
       while (webSocket.closeCode == null) {
         var message = await baseSession.receiveMessage();
-        await router.receiveMessage(baseSession, message);
+        await _router.receiveMessage(baseSession, message);
       }
     });
   }

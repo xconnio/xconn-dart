@@ -5,21 +5,21 @@ import "package:wampproto/messages.dart";
 import "package:wampproto/types.dart";
 
 class Realm {
-  Dealer dealer = Dealer();
-  Broker broker = Broker();
+  final Dealer _dealer = Dealer();
+  final Broker _broker = Broker();
 
-  Map<int, IBaseSession> clients = {};
+  final Map<int, IBaseSession> _clients = {};
 
   void attachClient(IBaseSession base) {
-    clients[base.id()] = base;
-    dealer.addSession(base.id());
-    broker.addSession(base.id());
+    _clients[base.id()] = base;
+    _dealer.addSession(base.id());
+    _broker.addSession(base.id());
   }
 
   void detachClient(IBaseSession base) {
-    clients.remove(base.id());
-    broker.removeSession(base.id());
-    dealer.removeSession(base.id());
+    _clients.remove(base.id());
+    _broker.removeSession(base.id());
+    _dealer.removeSession(base.id());
   }
 
   void stop() {
@@ -29,36 +29,36 @@ class Realm {
   Future<void> receiveMessage(int sessionID, Message msg) async {
     switch (msg.messageType()) {
       case Call.id || Yield.id || Register.id || UnRegister.id:
-        MessageWithRecipient recipient = dealer.receiveMessage(sessionID, msg);
-        var client = clients[recipient.recipient];
+        MessageWithRecipient recipient = _dealer.receiveMessage(sessionID, msg);
+        var client = _clients[recipient.recipient];
         client?.sendMessage(recipient.message);
 
       case Publish.id:
-        List<MessageWithRecipient>? recipients = broker.receiveMessage(sessionID, msg);
+        List<MessageWithRecipient>? recipients = _broker.receiveMessage(sessionID, msg);
         if (recipients == null) {
           return;
         }
 
         for (final recipient in recipients) {
-          var client = clients[recipient.recipient];
+          var client = _clients[recipient.recipient];
           client?.sendMessage(recipient.message);
         }
 
       case Subscribe.id || UnSubscribe.id:
-        List<MessageWithRecipient>? recipients = broker.receiveMessage(sessionID, msg);
+        List<MessageWithRecipient>? recipients = _broker.receiveMessage(sessionID, msg);
         if (recipients == null) {
           throw Exception("recipients null");
         }
         MessageWithRecipient recipient = recipients[0];
-        var client = clients[recipient.recipient];
+        var client = _clients[recipient.recipient];
         client?.sendMessage(recipient.message);
 
       case Goodbye.id:
-        dealer.removeSession(sessionID);
-        broker.removeSession(sessionID);
-        var client = clients[sessionID];
+        _dealer.removeSession(sessionID);
+        _broker.removeSession(sessionID);
+        var client = _clients[sessionID];
         await client?.close();
-        clients.remove(sessionID);
+        _clients.remove(sessionID);
     }
   }
 }
