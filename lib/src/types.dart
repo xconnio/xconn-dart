@@ -260,3 +260,46 @@ class ClientSideLocalBaseSession implements IBaseSession {
     _completer.complete();
   }
 }
+
+class ServerSideLocalBaseSession extends IBaseSession {
+  ServerSideLocalBaseSession(
+    this._id,
+    this._realm,
+    this._authid,
+    this._authrole,
+    this._serializer, {
+    ClientSideLocalBaseSession? other,
+  }) : _other = other;
+
+  final int _id;
+  final String _realm;
+  final String _authid;
+  final String _authrole;
+  final Serializer _serializer;
+  final ClientSideLocalBaseSession? _other;
+
+  @override
+  int id() => _id;
+
+  @override
+  String realm() => _realm;
+
+  @override
+  String authid() => _authid;
+
+  @override
+  String authrole() => _authrole;
+
+  @override
+  Future send(Object data) async {
+    await _other?.feed(data);
+  }
+
+  @override
+  Future sendMessage(Message msg) async {
+    await send(_serializer.serialize(msg));
+  }
+
+  @override
+  Future close() async {}
+}
