@@ -17,4 +17,7 @@ tests:
 	dart test
 
 run:
-	dart lib/src/runner.dart
+	dart lib/src/xconn.dart
+
+build:
+	dart compile exe lib/src/xconn.dart -o xconn.bin

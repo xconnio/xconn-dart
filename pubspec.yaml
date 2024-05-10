@@ -9,6 +9,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
+  args: ^2.5.0
   wampproto:
     git: https://github.com/xconnio/wampproto-dart
 
