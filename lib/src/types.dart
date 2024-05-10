@@ -113,6 +113,7 @@ class BaseSession extends IBaseSession {
 
   @override
   Future<void> close() async {
+    await _wsStreamSubscription.cancel();
     await _ws.close();
   }
 }
