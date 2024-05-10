@@ -1,10 +1,12 @@
 import "dart:async";
+import "dart:collection";
 import "dart:io";
-import "dart:typed_data";
 
 import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
 import "package:wampproto/session.dart";
+
+import "package:xconn/src/router.dart";
 
 abstract class IBaseSession {
   int id() {
@@ -23,7 +25,11 @@ abstract class IBaseSession {
     throw UnimplementedError();
   }
 
-  void send(Uint8List data) {
+  Serializer serializer() {
+    throw UnimplementedError();
+  }
+
+  void send(Object data) {
     throw UnimplementedError();
   }
 
@@ -45,12 +51,12 @@ abstract class IBaseSession {
 }
 
 class BaseSession extends IBaseSession {
-  BaseSession(this._ws, this._wsStreamSubscription, this.sessionDetails, this.serializer);
+  BaseSession(this._ws, this._wsStreamSubscription, this.sessionDetails, this._serializer);
 
   final WebSocket _ws;
   final StreamSubscription<dynamic> _wsStreamSubscription;
   SessionDetails sessionDetails;
-  Serializer serializer;
+  final Serializer _serializer;
 
   @override
   int id() {
@@ -73,13 +79,18 @@ class BaseSession extends IBaseSession {
   }
 
   @override
+  Serializer serializer() {
+    return _serializer;
+  }
+
+  @override
   void send(Object data) {
     _ws.add(data);
   }
 
   @override
   void sendMessage(Message msg) {
-    send(serializer.serialize(msg));
+    send(_serializer.serialize(msg));
   }
 
   @override
@@ -97,7 +108,7 @@ class BaseSession extends IBaseSession {
 
   @override
   Future<Message> receiveMessage() async {
-    return serializer.deserialize(await receive());
+    return _serializer.deserialize(await receive());
   }
 
   @override
@@ -186,4 +197,109 @@ class UnsubscribeRequest {
 
   final Completer<void> future;
   final int subscriptionId;
+}
+
+class ClientSideLocalBaseSession implements IBaseSession {
+  ClientSideLocalBaseSession(this._id, this._realm, this._authid, this._authrole, this._serializer, this._router) {
+    _incomingMessages = Queue();
+    _completer = Completer();
+  }
+
+  final int _id;
+  final String _realm;
+  final String _authid;
+  final String _authrole;
+  final Serializer _serializer;
+  final Router _router;
+
+  late Queue _incomingMessages;
+  late Completer _completer;
+
+  @override
+  int id() => _id;
+
+  @override
+  String realm() => _realm;
+
+  @override
+  String authid() => _authid;
+
+  @override
+  String authrole() => _authrole;
+
+  @override
+  serializer() => _serializer;
+
+  @override
+  Future send(Object data) async {
+    await sendMessage(_serializer.deserialize(data));
+  }
+
+  @override
+  Future<Object> receive() async {
+    await _completer.future;
+    _completer = Completer();
+    return _incomingMessages.removeFirst();
+  }
+
+  @override
+  Future<void> sendMessage(Message msg) async {
+    return _router.receiveMessage(this, msg);
+  }
+
+  @override
+  Future<Message> receiveMessage() async {
+    return _serializer.deserialize(await receive());
+  }
+
+  @override
+  Future close() async {}
+
+  Future feed(Object data) async {
+    _incomingMessages.add(data);
+    _completer.complete();
+  }
+}
+
+class ServerSideLocalBaseSession extends IBaseSession {
+  ServerSideLocalBaseSession(
+    this._id,
+    this._realm,
+    this._authid,
+    this._authrole,
+    this._serializer, {
+    ClientSideLocalBaseSession? other,
+  }) : _other = other;
+
+  final int _id;
+  final String _realm;
+  final String _authid;
+  final String _authrole;
+  final Serializer _serializer;
+  final ClientSideLocalBaseSession? _other;
+
+  @override
+  int id() => _id;
+
+  @override
+  String realm() => _realm;
+
+  @override
+  String authid() => _authid;
+
+  @override
+  String authrole() => _authrole;
+
+  @override
+  Future send(Object data) async {
+    await _other?.feed(data);
+  }
+
+  @override
+  Future sendMessage(Message msg) async {
+    await send(_serializer.serialize(msg));
+  }
+
+  @override
+  Future close() async {}
 }

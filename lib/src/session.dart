@@ -9,7 +9,7 @@ import "package:xconn/src/types.dart";
 
 class Session {
   Session(this._baseSession) {
-    _wampSession = WAMPSession(serializer: _baseSession.serializer);
+    _wampSession = WAMPSession(serializer: _baseSession.serializer());
     Future.microtask(() async {
       while (true) {
         var message = await _baseSession.receive();
@@ -18,7 +18,7 @@ class Session {
     });
   }
 
-  final BaseSession _baseSession;
+  final IBaseSession _baseSession;
   late WAMPSession _wampSession;
 
   final SessionScopeIDGenerator _idGen = SessionScopeIDGenerator();
