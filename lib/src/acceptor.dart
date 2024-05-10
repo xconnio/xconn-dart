@@ -29,9 +29,9 @@ class WAMPSessionAcceptor {
       MapEntry<Object, bool> received = acceptor.receive(message);
       ws.add(received.key);
       if (received.value) {
-        wsStreamSubscription.onData(sessionStreamController.add);
-        completer.complete(BaseSession(ws, sessionStreamController, acceptor.getSessionDetails(), _serializer));
-        return;
+        wsStreamSubscription.onData(null);
+        var base = BaseSession(ws, wsStreamSubscription, acceptor.getSessionDetails(), _serializer);
+        completer.complete(base);
       }
     });
 
