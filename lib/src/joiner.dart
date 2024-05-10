@@ -32,9 +32,9 @@ class WAMPSessionJoiner {
     wsStreamSubscription = ws.listen((event) {
       dynamic toSend = joiner.receive(event);
       if (toSend == null) {
-        wsStreamSubscription.onData(sessionStreamController.add);
+        wsStreamSubscription.onData(null);
 
-        BaseSession baseSession = BaseSession(ws, sessionStreamController, joiner.getSessionDetails(), _serializer);
+        BaseSession baseSession = BaseSession(ws, wsStreamSubscription, joiner.getSessionDetails(), _serializer);
         welcomeCompleter.complete(baseSession);
       } else {
         ws.add(toSend);

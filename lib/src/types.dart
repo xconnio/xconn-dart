@@ -45,10 +45,10 @@ abstract class IBaseSession {
 }
 
 class BaseSession extends IBaseSession {
-  BaseSession(this._ws, this._wsStreamController, this.sessionDetails, this.serializer);
+  BaseSession(this._ws, this._wsStreamSubscription, this.sessionDetails, this.serializer);
 
   final WebSocket _ws;
-  final StreamController _wsStreamController;
+  final StreamSubscription<dynamic> _wsStreamSubscription;
   SessionDetails sessionDetails;
   Serializer serializer;
 
@@ -84,7 +84,15 @@ class BaseSession extends IBaseSession {
 
   @override
   Future<Object> receive() async {
-    return await _wsStreamController.stream.first;
+    var completer = Completer<Object>();
+
+    _wsStreamSubscription
+      ..onData((data) {
+        completer.complete(data);
+        _wsStreamSubscription.pause();
+      })
+      ..resume();
+    return completer.future;
   }
 
   @override
