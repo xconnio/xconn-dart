@@ -1,6 +1,5 @@
 import "dart:async";
 import "dart:io";
-import "dart:typed_data";
 
 import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
@@ -23,7 +22,11 @@ abstract class IBaseSession {
     throw UnimplementedError();
   }
 
-  void send(Uint8List data) {
+  Serializer serializer() {
+    throw UnimplementedError();
+  }
+
+  void send(Object data) {
     throw UnimplementedError();
   }
 
@@ -45,12 +48,12 @@ abstract class IBaseSession {
 }
 
 class BaseSession extends IBaseSession {
-  BaseSession(this._ws, this._wsStreamSubscription, this.sessionDetails, this.serializer);
+  BaseSession(this._ws, this._wsStreamSubscription, this.sessionDetails, this._serializer);
 
   final WebSocket _ws;
   final StreamSubscription<dynamic> _wsStreamSubscription;
   SessionDetails sessionDetails;
-  Serializer serializer;
+  final Serializer _serializer;
 
   @override
   int id() {
@@ -73,13 +76,18 @@ class BaseSession extends IBaseSession {
   }
 
   @override
+  Serializer serializer() {
+    return _serializer;
+  }
+
+  @override
   void send(Object data) {
     _ws.add(data);
   }
 
   @override
   void sendMessage(Message msg) {
-    send(serializer.serialize(msg));
+    send(_serializer.serialize(msg));
   }
 
   @override
@@ -97,7 +105,7 @@ class BaseSession extends IBaseSession {
 
   @override
   Future<Message> receiveMessage() async {
-    return serializer.deserialize(await receive());
+    return _serializer.deserialize(await receive());
   }
 
   @override
