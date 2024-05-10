@@ -15,3 +15,6 @@ format:
 
 tests:
 	dart test
+
+run:
+	dart lib/src/runner.dart
