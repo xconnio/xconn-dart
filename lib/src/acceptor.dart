@@ -22,26 +22,20 @@ class WAMPSessionAcceptor {
 
     Completer<BaseSession> completer = Completer<BaseSession>();
 
+    // ignore: cancel_subscriptions
     late StreamSubscription<dynamic> wsStreamSubscription;
-    final sessionStreamController = StreamController.broadcast();
 
     wsStreamSubscription = ws.listen((message) {
       MapEntry<Object, bool> received = acceptor.receive(message);
       ws.add(received.key);
       if (received.value) {
-        wsStreamSubscription.onData(null);
+        wsStreamSubscription
+          ..onData(null)
+          ..onDone(null);
+
         var base = BaseSession(ws, wsStreamSubscription, acceptor.getSessionDetails(), _serializer);
         completer.complete(base);
       }
-    });
-
-    wsStreamSubscription.onDone(() {
-      sessionStreamController.stream.isEmpty.then(
-        (isEmpty) => {
-          if (!isEmpty) {sessionStreamController.close()},
-        },
-      );
-      wsStreamSubscription.cancel();
     });
 
     return completer.future;

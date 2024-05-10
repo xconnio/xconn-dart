@@ -26,27 +26,21 @@ class WAMPSessionJoiner {
 
     var welcomeCompleter = Completer<BaseSession>();
 
+    // ignore: cancel_subscriptions
     late StreamSubscription<dynamic> wsStreamSubscription;
-    final sessionStreamController = StreamController.broadcast();
 
     wsStreamSubscription = ws.listen((event) {
       dynamic toSend = joiner.receive(event);
       if (toSend == null) {
-        wsStreamSubscription.onData(null);
+        wsStreamSubscription
+          ..onData(null)
+          ..onDone(null);
 
         BaseSession baseSession = BaseSession(ws, wsStreamSubscription, joiner.getSessionDetails(), _serializer);
         welcomeCompleter.complete(baseSession);
       } else {
         ws.add(toSend);
       }
-    });
-    wsStreamSubscription.onDone(() {
-      sessionStreamController.stream.isEmpty.then(
-        (isEmpty) => {
-          if (!isEmpty) {sessionStreamController.close()},
-        },
-      );
-      wsStreamSubscription.cancel();
     });
 
     return welcomeCompleter.future;
