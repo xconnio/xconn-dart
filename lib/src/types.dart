@@ -229,7 +229,7 @@ class ClientSideLocalBaseSession implements IBaseSession {
   String authrole() => _authrole;
 
   @override
-  serializer() => _serializer;
+  Serializer serializer() => _serializer;
 
   @override
   Future send(Object data) async {
@@ -238,8 +238,11 @@ class ClientSideLocalBaseSession implements IBaseSession {
 
   @override
   Future<Object> receive() async {
-    await _completer.future;
-    _completer = Completer();
+    if (_incomingMessages.isEmpty) {
+      await _completer.future;
+      _completer = Completer();
+    }
+
     return _incomingMessages.removeFirst();
   }
 
@@ -258,7 +261,9 @@ class ClientSideLocalBaseSession implements IBaseSession {
 
   Future feed(Object data) async {
     _incomingMessages.add(data);
-    _completer.complete();
+    if (!_completer.isCompleted) {
+      _completer.complete();
+    }
   }
 }
 
