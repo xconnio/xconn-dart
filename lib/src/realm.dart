@@ -39,25 +39,32 @@ class Realm {
         break;
 
       case Publish.id:
-        List<MessageWithRecipient>? recipients = _broker.receiveMessage(sessionID, msg);
-        if (recipients == null) {
-          return;
-        }
+        var publishMsg = msg as Publish;
+        var publication = _broker.receivePublish(sessionID, publishMsg);
 
-        for (final recipient in recipients) {
-          var client = _clients[recipient.recipient];
-          client?.sendMessage(recipient.message);
+        publication.recipients?.forEach((recipient) {
+          var client = _clients[recipient];
+          var event = publication.event;
+          if (event != null) {
+            client?.sendMessage(event);
+          }
+        });
+
+        var ack = publication.ack;
+        if (ack != null) {
+          var client = _clients[ack.recipient];
+          client?.sendMessage(ack.message);
         }
 
         break;
 
       case Subscribe.id:
       case UnSubscribe.id:
-        List<MessageWithRecipient>? recipients = _broker.receiveMessage(sessionID, msg);
-        if (recipients == null) {
-          throw Exception("recipients null");
+        MessageWithRecipient? recipient = _broker.receiveMessage(sessionID, msg);
+        if (recipient == null) {
+          throw Exception("recipient null");
         }
-        MessageWithRecipient recipient = recipients[0];
+
         var client = _clients[recipient.recipient];
         client?.sendMessage(recipient.message);
         break;
