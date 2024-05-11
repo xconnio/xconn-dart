@@ -51,7 +51,12 @@ abstract class IBaseSession {
 }
 
 class BaseSession extends IBaseSession {
-  BaseSession(this._ws, this._wsStreamSubscription, this.sessionDetails, this._serializer);
+  BaseSession(this._ws, this._wsStreamSubscription, this.sessionDetails, this._serializer) {
+    // close cleanly on abrupt client disconnect
+    _wsStreamSubscription.onDone(() async {
+      await close();
+    });
+  }
 
   final WebSocket _ws;
   final StreamSubscription<dynamic> _wsStreamSubscription;

@@ -15,15 +15,13 @@ class WAMPSessionAcceptor {
 
   IServerAuthenticator? _authenticator;
   late Serializer _serializer;
+  late StreamSubscription wsStreamSubscription;
 
   Future<BaseSession> accept(WebSocket ws) async {
     _serializer = getSerializer(ws.protocol);
     Acceptor acceptor = Acceptor(serializer: _serializer, authenticator: _authenticator);
 
     Completer<BaseSession> completer = Completer<BaseSession>();
-
-    // ignore: cancel_subscriptions
-    late StreamSubscription<dynamic> wsStreamSubscription;
 
     wsStreamSubscription = ws.listen((message) {
       MapEntry<Object, bool> received = acceptor.receive(message);

@@ -45,6 +45,9 @@ class Server {
       _router.attachClient(baseSession);
 
       _handleWebSocket(baseSession, webSocket);
+      acceptor.wsStreamSubscription.onDone(() {
+        _router.detachClient(baseSession);
+      });
     }
   }
 
