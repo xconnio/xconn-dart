@@ -243,12 +243,15 @@ class ClientSideLocalBaseSession implements IBaseSession {
 
   @override
   Future<Object> receive() async {
-    if (_incomingMessages.isEmpty) {
-      await _completer.future;
-      _completer = Completer();
+    if (_incomingMessages.isNotEmpty) {
+      return _incomingMessages.removeFirst();
     }
 
-    return _incomingMessages.removeFirst();
+    await _completer.future;
+    _completer = Completer();
+
+    // Recursive call because in some cases there might still be no message available even after waiting
+    return receive();
   }
 
   @override
