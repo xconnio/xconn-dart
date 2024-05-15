@@ -2,7 +2,6 @@ name: xconn
 description: WAMP v2 Client and Router for Dart.
 version: 0.1.0
 repository: https://github.com/xconnio/xconn-dart
-publish_to: none
 
 environment:
   sdk: ^2.17.0
