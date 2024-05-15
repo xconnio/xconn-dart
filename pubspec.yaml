@@ -4,7 +4,7 @@ version: 0.1.0
 repository: https://github.com/xconnio/xconn-dart
 
 environment:
-  sdk: ^2.17.0
+  sdk: ">=2.17.0 <4.0.0"
 
 # Add regular dependencies here.
 dependencies:
