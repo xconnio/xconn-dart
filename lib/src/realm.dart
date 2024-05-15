@@ -1,6 +1,7 @@
 import "package:wampproto/broker.dart";
 import "package:wampproto/dealer.dart";
 import "package:wampproto/messages.dart";
+import "package:wampproto/session.dart";
 import "package:wampproto/types.dart";
 
 import "package:xconn/src/types.dart";
@@ -13,8 +14,9 @@ class Realm {
 
   void attachClient(IBaseSession base) {
     _clients[base.id()] = base;
-    _dealer.addSession(base.id());
-    _broker.addSession(base.id());
+    var details = SessionDetails(base.id(), base.realm(), base.authid(), base.authrole());
+    _dealer.addSession(details);
+    _broker.addSession(details);
   }
 
   void detachClient(IBaseSession base) {
