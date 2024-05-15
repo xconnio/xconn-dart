@@ -10,8 +10,7 @@ environment:
 # Add regular dependencies here.
 dependencies:
   args: ^2.5.0
-  wampproto:
-    git: https://github.com/xconnio/wampproto-dart
+  wampproto: ^0.1.0
 
 dev_dependencies:
   lints: ^3.0.0
