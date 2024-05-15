@@ -133,7 +133,7 @@ class Session {
     return completer.future;
   }
 
-  Future<Registration> register(String procedure, Result Function(Invocation) endpoint) {
+  Future<Registration> register(String procedure, Result Function(Invocation invocation) endpoint) {
     var register = msg.Register(_nextID, procedure);
 
     var completer = Completer<Registration>();
@@ -174,7 +174,7 @@ class Session {
     return null;
   }
 
-  Future<Subscription> subscribe(String topic, void Function(Event) endpoint) {
+  Future<Subscription> subscribe(String topic, void Function(Event event) endpoint) {
     var subscribe = msg.Subscribe(_nextID, topic);
 
     var completer = Completer<Subscription>();
