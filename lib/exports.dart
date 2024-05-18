@@ -1,3 +1,7 @@
+export "package:wampproto/auth.dart"
+    show AnonymousAuthenticator, CryptoSignAuthenticator, TicketAuthenticator, WAMPCRAAuthenticator;
+export "package:wampproto/serializers.dart" show CBORSerializer, JSONSerializer, MsgPackSerializer;
+
 export "src/client.dart" show Client;
 export "src/router.dart" show Router;
 export "src/server.dart" show Server;
