@@ -167,7 +167,8 @@ class Session {
     _publishRequests[publish.requestID] = completer;
     _baseSession.send(_wampSession.sendMessage(publish));
 
-    if (options != null && options["acknowledge"]) {
+    var ack = options?["acknowledge"] ?? false;
+    if (ack) {
       return completer.future;
     }
 
