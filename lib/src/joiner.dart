@@ -30,16 +30,20 @@ class WAMPSessionJoiner {
     late StreamSubscription<dynamic> wsStreamSubscription;
 
     wsStreamSubscription = ws.listen((event) {
-      dynamic toSend = joiner.receive(event);
-      if (toSend == null) {
-        wsStreamSubscription
-          ..onData(null)
-          ..onDone(null);
+      try {
+        var toSend = joiner.receive(event);
+        if (toSend == null) {
+          wsStreamSubscription
+            ..onData(null)
+            ..onDone(null);
 
-        BaseSession baseSession = BaseSession(ws, wsStreamSubscription, joiner.getSessionDetails(), _serializer);
-        welcomeCompleter.complete(baseSession);
-      } else {
-        ws.add(toSend);
+          BaseSession baseSession = BaseSession(ws, wsStreamSubscription, joiner.getSessionDetails(), _serializer);
+          welcomeCompleter.complete(baseSession);
+        } else {
+          ws.add(toSend);
+        }
+      } on Exception catch (error) {
+        welcomeCompleter.completeError(error);
       }
     });
 
