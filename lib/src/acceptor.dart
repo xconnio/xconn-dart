@@ -24,15 +24,19 @@ class WAMPSessionAcceptor {
     Completer<BaseSession> completer = Completer<BaseSession>();
 
     wsStreamSubscription = ws.listen((message) {
-      MapEntry<Object, bool> received = acceptor.receive(message);
-      ws.add(received.key);
-      if (received.value) {
-        wsStreamSubscription
-          ..onData(null)
-          ..onDone(null);
+      try {
+        MapEntry<Object, bool> received = acceptor.receive(message);
+        ws.add(received.key);
+        if (received.value) {
+          wsStreamSubscription
+            ..onData(null)
+            ..onDone(null);
 
-        var base = BaseSession(ws, wsStreamSubscription, acceptor.getSessionDetails(), _serializer);
-        completer.complete(base);
+          var base = BaseSession(ws, wsStreamSubscription, acceptor.getSessionDetails(), _serializer);
+          completer.complete(base);
+        }
+      } on Exception catch (error) {
+        completer.completeError(error);
       }
     });
 
