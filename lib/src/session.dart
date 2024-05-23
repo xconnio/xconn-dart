@@ -133,8 +133,12 @@ class Session {
     return completer.future;
   }
 
-  Future<Registration> register(String procedure, Result Function(Invocation invocation) endpoint) {
-    var register = msg.Register(_nextID, procedure);
+  Future<Registration> register(
+    String procedure,
+    Result Function(Invocation invocation) endpoint, {
+    Map<String, dynamic>? options,
+  }) {
+    var register = msg.Register(_nextID, procedure, options: options);
 
     var completer = Completer<Registration>();
     _registerRequests[register.requestID] = RegisterRequest(completer, endpoint);
@@ -175,8 +179,8 @@ class Session {
     return null;
   }
 
-  Future<Subscription> subscribe(String topic, void Function(Event event) endpoint) {
-    var subscribe = msg.Subscribe(_nextID, topic);
+  Future<Subscription> subscribe(String topic, void Function(Event event) endpoint, {Map<String, dynamic>? options}) {
+    var subscribe = msg.Subscribe(_nextID, topic, options: options);
 
     var completer = Completer<Subscription>();
     _subscribeRequests[subscribe.requestID] = SubscribeRequest(completer, endpoint);
