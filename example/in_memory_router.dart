@@ -1,5 +1,3 @@
-import "package:wampproto/serializers.dart";
-
 import "package:xconn/exports.dart";
 import "package:xconn/src/types.dart";
 
