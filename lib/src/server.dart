@@ -53,6 +53,7 @@ class Server {
   }
 
   Future<void> close() async {
+    await _router.stop();
     await _httpServer.close(force: true);
   }
 

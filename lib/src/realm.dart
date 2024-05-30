@@ -25,8 +25,10 @@ class Realm {
     _dealer.removeSession(base.id());
   }
 
-  void stop() {
-    // stop will disconnect all clients.
+  Future<void> stop() async {
+    // concurrently close all sessions
+    await Future.wait(_clients.values.map((session) => session.close()));
+    _clients.clear();
   }
 
   Future<void> receiveMessage(int sessionID, Message msg) async {
