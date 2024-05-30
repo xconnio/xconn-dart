@@ -21,3 +21,13 @@ run:
 
 build:
 	dart compile exe lib/src/xconn.dart -o xconn.bin
+
+build-docs:
+	mkdir -p site/xconn/
+	mkdocs build -d site/xconn/dart
+
+run-docs:
+	mkdocs serve
+
+clean-docs:
+	rm -rf site/
