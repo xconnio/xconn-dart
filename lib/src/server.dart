@@ -10,6 +10,7 @@ class Server {
   Server(this._router);
 
   final Router _router;
+  late HttpServer _httpServer;
 
   List<String> supportedProtocols = [jsonSubProtocol, cborSubProtocol, msgpackSubProtocol];
 
@@ -32,9 +33,9 @@ class Server {
   }
 
   Future<void> start(String host, int port) async {
-    var server = await HttpServer.bind(host, port);
+    _httpServer = await HttpServer.bind(host, port);
 
-    await for (final request in server) {
+    await for (final request in _httpServer) {
       var webSocket = await WebSocketTransformer.upgrade(
         request,
         protocolSelector: (supportedProtocols) => protocolSelector(request),
@@ -49,6 +50,10 @@ class Server {
         _router.detachClient(baseSession);
       });
     }
+  }
+
+  Future<void> close() async {
+    await _httpServer.close(force: true);
   }
 
   void _handleWebSocket(BaseSession baseSession, WebSocket webSocket) {
