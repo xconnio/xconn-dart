@@ -1,6 +1,7 @@
 import "dart:async";
 import "dart:io";
 
+import "package:wampproto/auth.dart";
 import "package:xconn/exports.dart";
 import "package:xconn/src/acceptor.dart";
 import "package:xconn/src/helpers.dart";
@@ -32,7 +33,7 @@ class Server {
     return null;
   }
 
-  Future<void> start(String host, int port) async {
+  Future<void> start(String host, int port, {IServerAuthenticator? authenticator}) async {
     _httpServer = await HttpServer.bind(host, port);
 
     await for (final request in _httpServer) {
@@ -41,14 +42,18 @@ class Server {
         protocolSelector: (supportedProtocols) => protocolSelector(request),
       );
 
-      WAMPSessionAcceptor acceptor = WAMPSessionAcceptor();
-      BaseSession baseSession = await acceptor.accept(webSocket);
-      _router.attachClient(baseSession);
+      try {
+        WAMPSessionAcceptor acceptor = WAMPSessionAcceptor(authenticator: authenticator);
+        BaseSession baseSession = await acceptor.accept(webSocket);
+        _router.attachClient(baseSession);
 
-      _handleWebSocket(baseSession, webSocket);
-      acceptor.wsStreamSubscription.onDone(() {
-        _router.detachClient(baseSession);
-      });
+        _handleWebSocket(baseSession, webSocket);
+        acceptor.wsStreamSubscription.onDone(() {
+          _router.detachClient(baseSession);
+        });
+      } on Exception catch (err) {
+        print(err);
+      }
     }
   }
 
