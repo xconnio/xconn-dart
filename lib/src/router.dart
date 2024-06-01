@@ -44,4 +44,12 @@ class Router {
 
     await _realms[realm]?.receiveMessage(baseSession.id(), msg);
   }
+
+  Future<void> stop() async {
+    var realmKeys = _realms.keys.toList();
+    for (final key in realmKeys) {
+      var realm = _realms.remove(key);
+      await realm?.stop();
+    }
+  }
 }
