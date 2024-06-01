@@ -56,7 +56,9 @@ class Session {
       if (endpoint != null) {
         Result result = endpoint(Invocation(args: message.args, kwargs: message.kwargs, details: message.details));
         Object data = _wampSession.sendMessage(
-          msg.Yield(message.requestID, args: result.args, kwargs: result.kwargs, options: result.details),
+          msg.Yield(
+            msg.YieldFields(message.requestID, args: result.args, kwargs: result.kwargs, options: result.details),
+          ),
         );
         _baseSession.send(data);
       }
@@ -146,7 +148,7 @@ class Session {
     Map<String, dynamic>? kwargs,
     Map<String, dynamic>? options,
   }) {
-    var call = msg.Call(_nextID, procedure, args: args, kwargs: kwargs, options: options);
+    var call = msg.Call(msg.CallFields(_nextID, procedure, args: args, kwargs: kwargs, options: options));
 
     var completer = Completer<Result>();
     _callRequests[call.requestID] = completer;
@@ -161,7 +163,7 @@ class Session {
     Result Function(Invocation invocation) endpoint, {
     Map<String, dynamic>? options,
   }) {
-    var register = msg.Register(_nextID, procedure, options: options);
+    var register = msg.Register(msg.RegisterFields(_nextID, procedure, options: options));
 
     var completer = Completer<Registration>();
     _registerRequests[register.requestID] = RegisterRequest(completer, endpoint);
@@ -172,7 +174,7 @@ class Session {
   }
 
   Future<void> unregister(Registration reg) {
-    var unregister = msg.UnRegister(_nextID, reg.registrationID);
+    var unregister = msg.UnRegister(msg.UnRegisterFields(_nextID, reg.registrationID));
 
     var completer = Completer();
     _unregisterRequests[unregister.requestID] = UnregisterRequest(completer, reg.registrationID);
@@ -188,7 +190,7 @@ class Session {
     Map<String, dynamic>? kwargs,
     Map<String, dynamic>? options,
   }) {
-    var publish = msg.Publish(_nextID, topic, args: args, kwargs: kwargs, options: options);
+    var publish = msg.Publish(msg.PublishFields(_nextID, topic, args: args, kwargs: kwargs, options: options));
 
     var completer = Completer<void>();
     _publishRequests[publish.requestID] = completer;
@@ -203,7 +205,7 @@ class Session {
   }
 
   Future<Subscription> subscribe(String topic, void Function(Event event) endpoint, {Map<String, dynamic>? options}) {
-    var subscribe = msg.Subscribe(_nextID, topic, options: options);
+    var subscribe = msg.Subscribe(msg.SubscribeFields(_nextID, topic, options: options));
 
     var completer = Completer<Subscription>();
     _subscribeRequests[subscribe.requestID] = SubscribeRequest(completer, endpoint);
@@ -213,7 +215,7 @@ class Session {
   }
 
   Future<void> unsubscribe(Subscription sub) {
-    var unsubscribe = msg.UnSubscribe(_nextID, sub.subscriptionID);
+    var unsubscribe = msg.UnSubscribe(msg.UnSubscribeFields(_nextID, sub.subscriptionID));
 
     var completer = Completer<void>();
     _unsubscribeRequests[unsubscribe.requestID] = UnsubscribeRequest(completer, sub.subscriptionID);
