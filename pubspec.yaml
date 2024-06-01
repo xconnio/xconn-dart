@@ -10,6 +10,7 @@ environment:
 dependencies:
   args: ^2.5.0
   wampproto:
+    # ignore: invalid_dependency
     git: https://github.com/xconnio/wampproto-dart/
 
 dev_dependencies:
