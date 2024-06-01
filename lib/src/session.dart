@@ -3,6 +3,7 @@ import "dart:async";
 import "package:wampproto/idgen.dart";
 import "package:wampproto/messages.dart" as msg;
 import "package:wampproto/session.dart";
+import "package:xconn/src/exception.dart";
 
 import "package:xconn/src/helpers.dart";
 import "package:xconn/src/types.dart";
@@ -90,30 +91,52 @@ class Session {
     } else if (message is msg.Error) {
       switch (message.msgType) {
         case msg.Call.id:
-          _callRequests.remove(message.requestID);
+          var callRequest = _callRequests.remove(message.requestID);
+          callRequest?.completeError(
+            ApplicationError(message.uri, args: message.args, kwargs: message.kwargs),
+          );
           break;
 
         case msg.Register.id:
-          _registerRequests.remove(message.requestID);
+          var registerRequest = _registerRequests.remove(message.requestID);
+          registerRequest?.future.completeError(
+            ApplicationError(message.uri, args: message.args, kwargs: message.kwargs),
+          );
           break;
 
         case msg.UnRegister.id:
-          _unregisterRequests.remove(message.requestID);
+          var unregisterRequest = _unregisterRequests.remove(message.requestID);
+          unregisterRequest?.future.completeError(
+            ApplicationError(message.uri, args: message.args, kwargs: message.kwargs),
+          );
           break;
 
         case msg.Subscribe.id:
-          _subscribeRequests.remove(message.requestID);
+          var subscribeRequest = _subscribeRequests.remove(message.requestID);
+          subscribeRequest?.future.completeError(
+            ApplicationError(message.uri, args: message.args, kwargs: message.kwargs),
+          );
           break;
 
         case msg.UnSubscribe.id:
-          _unsubscribeRequests.remove(message.requestID);
+          var unsubscribeRequest = _unsubscribeRequests.remove(message.requestID);
+          unsubscribeRequest?.future.completeError(
+            ApplicationError(message.uri, args: message.args, kwargs: message.kwargs),
+          );
           break;
 
         case msg.Publish.id:
-          _publishRequests.remove(message.requestID);
-      }
+          var publishRequest = _publishRequests.remove(message.requestID);
+          publishRequest?.completeError(
+            ApplicationError(message.uri, args: message.args, kwargs: message.kwargs),
+          );
+          break;
 
-      throw Exception(wampErrorString(message));
+        default:
+          throw ProtocolError(wampErrorString(message));
+      }
+    } else {
+      throw ProtocolError("Unexpected message type ${message.runtimeType}");
     }
   }
 
