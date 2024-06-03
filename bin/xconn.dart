@@ -4,6 +4,7 @@ import "package:args/args.dart";
 import "package:xconn/exports.dart";
 import "package:yaml/yaml.dart";
 
+import "authenticator.dart";
 import "helpers.dart";
 import "types.dart";
 
@@ -96,9 +97,11 @@ Future<void> main(List<String> arguments) async {
 
       var s = Server(r);
 
+      var authenticator = ServerAuthenticator(cfg.authenticators);
+
       for (final transport in cfg.transports) {
         print("Listening for websocket connections on ws://0.0.0.0:${transport.port}/ws");
-        await s.start("0.0.0.0", transport.port);
+        await s.start("0.0.0.0", transport.port, authenticator: authenticator);
       }
       break;
     default:
