@@ -1,6 +1,11 @@
 import "dart:io";
 
 import "package:args/args.dart";
+import "package:xconn/exports.dart";
+import "package:yaml/yaml.dart";
+
+import "helpers.dart";
+import "types.dart";
 
 const config = """
 version: '1'
@@ -44,6 +49,7 @@ const cfgFile = "$cfgDir/config.yaml";
 Future<void> main(List<String> arguments) async {
   final parser = ArgParser()
     ..addCommand("init")
+    ..addCommand("start")
     ..addFlag("help", abbr: "h", negatable: false, help: "Prints usage information.");
 
   ArgResults argResults;
@@ -73,6 +79,28 @@ Future<void> main(List<String> arguments) async {
       print("Configuration file generated at .xconn/config.yaml");
       break;
 
+    case "start":
+      final file = File(cfgFile);
+      final configStr = file.readAsStringSync();
+      final yamlMap = loadYaml(configStr);
+
+      final dartMap = convertYamlToMap(yamlMap);
+
+      final cfg = Config.fromMap(dartMap);
+
+      var r = Router();
+
+      for (final realm in cfg.realms) {
+        r.addRealm(realm.name);
+      }
+
+      var s = Server(r);
+
+      for (final transport in cfg.transports) {
+        print("Listening for websocket connections on ws://0.0.0.0:${transport.port}/ws");
+        await s.start("0.0.0.0", transport.port);
+      }
+      break;
     default:
       print("Command not recognized.");
       exit(1);

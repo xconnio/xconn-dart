@@ -13,6 +13,7 @@ dependencies:
     # ignore: invalid_dependency
     git: https://github.com/xconnio/wampproto-dart/
   web_socket_channel: ^3.0.0
+  yaml: 3.1.2
 
 dev_dependencies:
   lints: ^3.0.0
