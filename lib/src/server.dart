@@ -2,6 +2,8 @@ import "dart:async";
 import "dart:io";
 
 import "package:wampproto/auth.dart";
+import "package:web_socket_channel/io.dart";
+import "package:web_socket_channel/web_socket_channel.dart";
 import "package:xconn/exports.dart";
 import "package:xconn/src/acceptor.dart";
 import "package:xconn/src/helpers.dart";
@@ -37,9 +39,11 @@ class Server {
     _httpServer = await HttpServer.bind(host, port);
 
     await for (final request in _httpServer) {
-      var webSocket = await WebSocketTransformer.upgrade(
-        request,
-        protocolSelector: (supportedProtocols) => protocolSelector(request),
+      var webSocket = IOWebSocketChannel(
+        await WebSocketTransformer.upgrade(
+          request,
+          protocolSelector: (supportedProtocols) => protocolSelector(request),
+        ),
       );
 
       try {
@@ -62,7 +66,7 @@ class Server {
     await _httpServer.close(force: true);
   }
 
-  void _handleWebSocket(BaseSession baseSession, WebSocket webSocket) {
+  void _handleWebSocket(BaseSession baseSession, WebSocketChannel webSocket) {
     Future.microtask(() async {
       while (webSocket.closeCode == null) {
         var message = await baseSession.receiveMessage();

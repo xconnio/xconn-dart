@@ -1,12 +1,14 @@
 import "dart:async";
-import "dart:io";
 
 import "package:wampproto/auth.dart";
 import "package:wampproto/joiner.dart";
 import "package:wampproto/serializers.dart";
+import "package:web_socket_channel/web_socket_channel.dart";
 
 import "package:xconn/src/helpers.dart";
 import "package:xconn/src/types.dart";
+import "package:xconn/src/web_socket_channel_io.dart"
+    if (dart.library.html) "package:xconn/src/web_socket_channel_html.dart";
 
 class WAMPSessionJoiner {
   WAMPSessionJoiner({IClientAuthenticator? authenticator, Serializer? serializer}) {
@@ -18,18 +20,18 @@ class WAMPSessionJoiner {
   late Serializer _serializer;
 
   Future<BaseSession> join(String uri, String realm) async {
-    // ignore: close_sinks
-    var ws = await WebSocket.connect(uri, protocols: [getSubProtocol(_serializer)]);
+    WebSocketChannel channel = webSocketChannel(uri, getSubProtocol(_serializer));
+    await channel.ready;
 
     final joiner = Joiner(realm, _serializer, _authenticator);
-    ws.add(joiner.sendHello());
+    channel.sink.add(joiner.sendHello());
 
     var welcomeCompleter = Completer<BaseSession>();
 
     // ignore: cancel_subscriptions
     late StreamSubscription<dynamic> wsStreamSubscription;
 
-    wsStreamSubscription = ws.listen((event) {
+    wsStreamSubscription = channel.stream.listen((event) {
       try {
         var toSend = joiner.receive(event);
         if (toSend == null) {
@@ -37,10 +39,10 @@ class WAMPSessionJoiner {
             ..onData(null)
             ..onDone(null);
 
-          BaseSession baseSession = BaseSession(ws, wsStreamSubscription, joiner.getSessionDetails(), _serializer);
+          BaseSession baseSession = BaseSession(channel, wsStreamSubscription, joiner.getSessionDetails(), _serializer);
           welcomeCompleter.complete(baseSession);
         } else {
-          ws.add(toSend);
+          channel.sink.add(toSend);
         }
       } on Exception catch (error) {
         welcomeCompleter.completeError(error);
