@@ -1,10 +1,10 @@
 import "dart:async";
 import "dart:collection";
-import "dart:io";
 
 import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
 import "package:wampproto/session.dart";
+import "package:web_socket_channel/web_socket_channel.dart";
 
 import "package:xconn/src/router.dart";
 
@@ -58,7 +58,7 @@ class BaseSession extends IBaseSession {
     });
   }
 
-  final WebSocket _ws;
+  final WebSocketChannel _ws;
   final StreamSubscription<dynamic> _wsStreamSubscription;
   SessionDetails sessionDetails;
   final Serializer _serializer;
@@ -90,7 +90,7 @@ class BaseSession extends IBaseSession {
 
   @override
   void send(Object data) {
-    _ws.add(data);
+    _ws.sink.add(data);
   }
 
   @override
@@ -119,7 +119,7 @@ class BaseSession extends IBaseSession {
   @override
   Future<void> close() async {
     await _wsStreamSubscription.cancel();
-    await _ws.close();
+    await _ws.sink.close();
   }
 }
 

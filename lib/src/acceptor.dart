@@ -1,10 +1,10 @@
 import "dart:async";
-import "dart:io";
 
 import "package:wampproto/acceptor.dart";
 import "package:wampproto/auth.dart";
 import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
+import "package:web_socket_channel/web_socket_channel.dart";
 
 import "package:xconn/src/helpers.dart";
 import "package:xconn/src/types.dart";
@@ -18,19 +18,19 @@ class WAMPSessionAcceptor {
   late Serializer _serializer;
   late StreamSubscription wsStreamSubscription;
 
-  Future<BaseSession> accept(WebSocket ws) async {
+  Future<BaseSession> accept(WebSocketChannel ws) async {
     _serializer = getSerializer(ws.protocol);
     Acceptor acceptor = Acceptor(serializer: _serializer, authenticator: _authenticator);
 
     Completer<BaseSession> completer = Completer<BaseSession>();
 
-    wsStreamSubscription = ws.listen((message) {
+    wsStreamSubscription = ws.stream.listen((message) {
       try {
         MapEntry<Object, bool> received = acceptor.receive(message);
-        ws.add(received.key);
+        ws.sink.add(received.key);
         if (received.value) {
           if (acceptor.isAborted()) {
-            ws.close();
+            ws.sink.close();
             var abortMessage = _serializer.deserialize(received.key) as Abort;
             completer.completeError(Exception(abortMessage.reason));
           } else {
@@ -43,7 +43,7 @@ class WAMPSessionAcceptor {
           }
         }
       } on Exception catch (error) {
-        ws.close();
+        ws.sink.close();
         completer.completeError(error);
       }
     });
