@@ -45,6 +45,7 @@ class Server {
           protocolSelector: (supportedProtocols) => protocolSelector(request),
         ),
       );
+      await webSocket.ready;
 
       try {
         WAMPSessionAcceptor acceptor = WAMPSessionAcceptor(authenticator: authenticator);
