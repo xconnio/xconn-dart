@@ -19,7 +19,7 @@ void main() {
   late int registrationID;
 
   test("register", () async {
-    var registerMsg = msg.Register(msg.RegisterFields(3, testProcedure));
+    var registerMsg = msg.Register(3, testProcedure);
     await router.receiveMessage(clientSideBase, registerMsg);
 
     var registered = await clientSideBase.receiveMessage();
@@ -29,14 +29,14 @@ void main() {
   });
 
   test("call", () async {
-    var callMsg = msg.Call(msg.CallFields(4, testProcedure));
+    var callMsg = msg.Call(4, testProcedure);
     await router.receiveMessage(clientSideBase, callMsg);
 
     var invocation = await clientSideBase.receiveMessage();
     expect(invocation, isA<msg.Invocation>());
 
     var requestID = (invocation as msg.Invocation).requestID;
-    var yieldMsg = msg.Yield(msg.YieldFields(requestID));
+    var yieldMsg = msg.Yield(requestID);
     await router.receiveMessage(clientSideBase, yieldMsg);
 
     var result = await clientSideBase.receiveMessage();
@@ -44,7 +44,7 @@ void main() {
   });
 
   test("unregister", () async {
-    var unregisterMsg = msg.UnRegister(msg.UnRegisterFields(5, registrationID));
+    var unregisterMsg = msg.UnRegister(5, registrationID);
     await router.receiveMessage(clientSideBase, unregisterMsg);
 
     var unregistered = await clientSideBase.receiveMessage();
@@ -54,7 +54,7 @@ void main() {
   late int subscriptionID;
 
   test("subscribe", () async {
-    var subscribeMsg = msg.Subscribe(msg.SubscribeFields(6, testTopic));
+    var subscribeMsg = msg.Subscribe(6, testTopic);
     await router.receiveMessage(clientSideBase, subscribeMsg);
 
     var subscribed = await clientSideBase.receiveMessage();
@@ -64,13 +64,13 @@ void main() {
   });
 
   test("publish", () async {
-    var publish = msg.Publish(msg.PublishFields(7, testTopic));
+    var publish = msg.Publish(7, testTopic);
     await router.receiveMessage(clientSideBase, publish);
 
     var event = await clientSideBase.receiveMessage();
     expect(event, isA<msg.Event>());
 
-    var publishAck = msg.Publish(msg.PublishFields(8, testTopic, options: {"acknowledge": true}));
+    var publishAck = msg.Publish(8, testTopic, options: {"acknowledge": true});
     await router.receiveMessage(clientSideBase, publishAck);
 
     var eventAck = await clientSideBase.receiveMessage();
@@ -81,7 +81,7 @@ void main() {
   });
 
   test("unsubscribe", () async {
-    var unsubscribeMsg = msg.UnSubscribe(msg.UnSubscribeFields(9, subscriptionID));
+    var unsubscribeMsg = msg.UnSubscribe(9, subscriptionID);
     await router.receiveMessage(clientSideBase, unsubscribeMsg);
 
     var unsubscribed = await clientSideBase.receiveMessage();

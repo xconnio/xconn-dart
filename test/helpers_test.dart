@@ -14,7 +14,7 @@ class TestSerializer implements Serializer {
 
   @override
   Message deserialize(final Object message) {
-    return Hello(HelloFields("realm", {}, "", []));
+    return Hello("realm", {}, "", []);
   }
 }
 
@@ -59,23 +59,23 @@ void main() {
 
   test("wampErrorString", () {
     // with no args or kwargs
-    final error = Error(ErrorFields(Register.id, 1, "wamp.error.no_such_procedure"));
+    final error = Error(Register.id, 1, "wamp.error.no_such_procedure");
     var errString = wampErrorString(error);
     expect(errString, "wamp.error.no_such_procedure");
 
     // with args only
-    final errorArgs = Error(ErrorFields(Register.id, 1, "wamp.error.no_such_procedure", args: [1, "two"]));
+    final errorArgs = Error(Register.id, 1, "wamp.error.no_such_procedure", args: [1, "two"]);
     var errArgsString = wampErrorString(errorArgs);
     expect(errArgsString, "wamp.error.no_such_procedure: 1, two");
 
     // with kwargs only
-    final errorKwArgs = Error(ErrorFields(Register.id, 1, "wamp.error.no_such_procedure", kwargs: {"key": "value"}));
+    final errorKwArgs = Error(Register.id, 1, "wamp.error.no_such_procedure", kwargs: {"key": "value"});
     var errKwArgsString = wampErrorString(errorKwArgs);
     expect(errKwArgsString, "wamp.error.no_such_procedure: key=value");
 
     // with args and kwargs
     final errorArgsKwArgs =
-        Error(ErrorFields(Register.id, 1, "wamp.error.no_such_procedure", args: [1, "two"], kwargs: {"key": "value"}));
+        Error(Register.id, 1, "wamp.error.no_such_procedure", args: [1, "two"], kwargs: {"key": "value"});
     var errArgsKwArgsString = wampErrorString(errorArgsKwArgs);
     expect(errArgsKwArgsString, "wamp.error.no_such_procedure: 1, two: key=value");
   });
