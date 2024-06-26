@@ -1,7 +1,7 @@
 import "dart:io";
 
 import "package:args/args.dart";
-import "package:xconn/exports.dart";
+import "package:xconn/xconn.dart";
 
 Future<void> main(List<String> args) async {
   var parser = ArgParser()

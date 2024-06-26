@@ -4,10 +4,10 @@ import "dart:io";
 import "package:wampproto/auth.dart";
 import "package:web_socket_channel/io.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
-import "package:xconn/exports.dart";
 import "package:xconn/src/acceptor.dart";
 import "package:xconn/src/helpers.dart";
 import "package:xconn/src/types.dart";
+import "package:xconn/xconn.dart";
 
 class Server {
   Server(this._router);
