@@ -1,9 +1,8 @@
 import "package:test/expect.dart";
 import "package:test/scaffolding.dart";
-import "package:wampproto/serializers.dart";
 
-import "package:xconn/exports.dart";
 import "package:xconn/src/types.dart";
+import "package:xconn/xconn.dart";
 
 void main() {
   var router = Router()..addRealm("realm1");
