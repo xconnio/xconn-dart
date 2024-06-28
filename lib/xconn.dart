@@ -1,3 +1,6 @@
+/// WAMP v2 Client and Router for Dart
+library xconn;
+
 export "package:wampproto/auth.dart"
     show AnonymousAuthenticator, CryptoSignAuthenticator, TicketAuthenticator, WAMPCRAAuthenticator;
 export "package:wampproto/serializers.dart" show CBORSerializer, JSONSerializer, MsgPackSerializer, Serializer;

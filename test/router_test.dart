@@ -1,8 +1,8 @@
 import "package:test/test.dart";
 import "package:wampproto/messages.dart" as msg;
 
-import "package:xconn/exports.dart";
 import "package:xconn/src/types.dart";
+import "package:xconn/xconn.dart";
 
 void main() {
   const testProcedure = "io.xconn.test_procedure";

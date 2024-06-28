@@ -1,5 +1,5 @@
-import "package:xconn/exports.dart";
 import "package:xconn/src/types.dart";
+import "package:xconn/xconn.dart";
 
 const procedureName = "io.xconn.example_procedure";
 const topicName = "io.xconn.example_topic";
