@@ -3,6 +3,7 @@ import "dart:async";
 import "package:wampproto/idgen.dart";
 import "package:wampproto/messages.dart" as msg;
 import "package:wampproto/session.dart";
+import "package:wampproto/uris.dart";
 import "package:xconn/src/exception.dart";
 
 import "package:xconn/src/helpers.dart";
@@ -38,6 +39,7 @@ class Session {
   final Map<int, SubscribeRequest> _subscribeRequests = {};
   final Map<int, void Function(Event)> _subscriptions = {};
   final Map<int, UnsubscribeRequest> _unsubscribeRequests = {};
+  final Completer<void> _goodbyeRequest = Completer();
 
   void _processIncomingMessage(msg.Message message) {
     if (message is msg.Result) {
@@ -135,6 +137,8 @@ class Session {
         default:
           throw ProtocolError(wampErrorString(message));
       }
+    } else if (message is msg.Goodbye) {
+      _goodbyeRequest.complete();
     } else {
       throw ProtocolError("Unexpected message type ${message.runtimeType}");
     }
@@ -220,5 +224,13 @@ class Session {
     _baseSession.send(_wampSession.sendMessage(unsubscribe));
 
     return completer.future;
+  }
+
+  Future<void> leave() {
+    var goodbyeMsg = msg.Goodbye({}, closeRealm);
+    var data = _wampSession.sendMessage(goodbyeMsg);
+    _baseSession.send(data);
+
+    return _goodbyeRequest.future.timeout(const Duration(seconds: 10));
   }
 }
