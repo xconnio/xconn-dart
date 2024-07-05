@@ -28,7 +28,13 @@ class Session {
   int get _nextID => _idGen.next();
 
   Future<void> close() async {
-    await _baseSession.close();
+    var goodbyeMsg = msg.Goodbye({}, closeRealm);
+    var data = _wampSession.sendMessage(goodbyeMsg);
+    _baseSession.send(data);
+
+    return _goodbyeRequest.future
+        .timeout(const Duration(seconds: 10), onTimeout: () async => _baseSession.close())
+        .whenComplete(() async => _baseSession.close());
   }
 
   final Map<int, Completer<Result>> _callRequests = {};
@@ -224,13 +230,5 @@ class Session {
     _baseSession.send(_wampSession.sendMessage(unsubscribe));
 
     return completer.future;
-  }
-
-  Future<void> leave() {
-    var goodbyeMsg = msg.Goodbye({}, closeRealm);
-    var data = _wampSession.sendMessage(goodbyeMsg);
-    _baseSession.send(data);
-
-    return _goodbyeRequest.future.timeout(const Duration(seconds: 10));
   }
 }
