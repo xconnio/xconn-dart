@@ -113,7 +113,7 @@ void main() async {
 }
 ```
 
-For more detailed examples or usage, refer to the [example](./example) folder of the project.
+For more detailed examples or usage, refer to the [examples](./examples) folder of the project.
 
 ## Server
 
