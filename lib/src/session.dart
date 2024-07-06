@@ -68,7 +68,7 @@ class Session {
         );
         _baseSession.send(data);
       }
-    } else if (message is msg.UnRegistered) {
+    } else if (message is msg.Unregistered) {
       var request = _unregisterRequests.remove(message.requestID);
       if (request != null) {
         _registrations.remove(request.registrationID);
@@ -90,7 +90,7 @@ class Session {
       if (endpoint != null) {
         endpoint(Event(args: message.args, kwargs: message.kwargs, details: message.details));
       }
-    } else if (message is msg.UnSubscribed) {
+    } else if (message is msg.Unsubscribed) {
       var request = _unsubscribeRequests.remove(message.requestID);
       if (request != null) {
         _subscriptions.remove(request.subscriptionId);
@@ -112,7 +112,7 @@ class Session {
           );
           break;
 
-        case msg.UnRegister.id:
+        case msg.Unregister.id:
           var unregisterRequest = _unregisterRequests.remove(message.requestID);
           unregisterRequest?.future.completeError(
             ApplicationError(message.uri, args: message.args, kwargs: message.kwargs),
@@ -126,7 +126,7 @@ class Session {
           );
           break;
 
-        case msg.UnSubscribe.id:
+        case msg.Unsubscribe.id:
           var unsubscribeRequest = _unsubscribeRequests.remove(message.requestID);
           unsubscribeRequest?.future.completeError(
             ApplicationError(message.uri, args: message.args, kwargs: message.kwargs),
@@ -182,7 +182,7 @@ class Session {
   }
 
   Future<void> unregister(Registration reg) {
-    var unregister = msg.UnRegister(_nextID, reg.registrationID);
+    var unregister = msg.Unregister(_nextID, reg.registrationID);
 
     var completer = Completer();
     _unregisterRequests[unregister.requestID] = UnregisterRequest(completer, reg.registrationID);
@@ -223,7 +223,7 @@ class Session {
   }
 
   Future<void> unsubscribe(Subscription sub) {
-    var unsubscribe = msg.UnSubscribe(_nextID, sub.subscriptionID);
+    var unsubscribe = msg.Unsubscribe(_nextID, sub.subscriptionID);
 
     var completer = Completer<void>();
     _unsubscribeRequests[unsubscribe.requestID] = UnsubscribeRequest(completer, sub.subscriptionID);

@@ -36,7 +36,7 @@ class Realm {
       case Call.id:
       case Yield.id:
       case Register.id:
-      case UnRegister.id:
+      case Unregister.id:
         MessageWithRecipient recipient = _dealer.receiveMessage(sessionID, msg);
         var client = _clients[recipient.recipient];
         client?.sendMessage(recipient.message);
@@ -63,7 +63,7 @@ class Realm {
         break;
 
       case Subscribe.id:
-      case UnSubscribe.id:
+      case Unsubscribe.id:
         MessageWithRecipient? recipient = _broker.receiveMessage(sessionID, msg);
         if (recipient == null) {
           throw Exception("recipient null");
