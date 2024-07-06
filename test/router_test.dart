@@ -44,11 +44,11 @@ void main() {
   });
 
   test("unregister", () async {
-    var unregisterMsg = msg.UnRegister(5, registrationID);
+    var unregisterMsg = msg.Unregister(5, registrationID);
     await router.receiveMessage(clientSideBase, unregisterMsg);
 
     var unregistered = await clientSideBase.receiveMessage();
-    expect(unregistered, isA<msg.UnRegistered>());
+    expect(unregistered, isA<msg.Unregistered>());
   });
 
   late int subscriptionID;
@@ -81,10 +81,10 @@ void main() {
   });
 
   test("unsubscribe", () async {
-    var unsubscribeMsg = msg.UnSubscribe(9, subscriptionID);
+    var unsubscribeMsg = msg.Unsubscribe(9, subscriptionID);
     await router.receiveMessage(clientSideBase, unsubscribeMsg);
 
     var unsubscribed = await clientSideBase.receiveMessage();
-    expect(unsubscribed, isA<msg.UnSubscribed>());
+    expect(unsubscribed, isA<msg.Unsubscribed>());
   });
 }
