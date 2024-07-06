@@ -10,7 +10,5 @@ For installation, see [Installation](https://docs.xconn.io/xconn/dart/installati
 
 For usage, see [Usage](https://docs.xconn.io/xconn/dart/usage) section.
 
-For questions or issues, contact the maintainers:
-
-- [omer@thing.com](mailto:omer@thing.com)
-- [muzzammil@xconn.io](mailto:muzzammil@xconn.io)
+For questions or issues, please visit our [GitHub repository](https://github.com/xconnio/xconn-dart)
+and feel free to open an issue.
