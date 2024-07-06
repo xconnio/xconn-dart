@@ -5,7 +5,6 @@ theme:
     - navigation.instant
     - navigation.tracks
     - navigation.sections
-    - toc.integrate
     - navigation.top
     - search.suggest
     - search.highlight
