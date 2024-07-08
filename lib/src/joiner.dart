@@ -23,7 +23,7 @@ class WAMPSessionJoiner {
     WebSocketChannel channel = webSocketChannel(uri, getSubProtocol(_serializer));
     await channel.ready;
 
-    final joiner = Joiner(realm, _serializer, _authenticator);
+    final joiner = Joiner(realm, serializer: _serializer, authenticator: _authenticator);
     channel.sink.add(joiner.sendHello());
 
     var welcomeCompleter = Completer<BaseSession>();

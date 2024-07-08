@@ -19,12 +19,12 @@ String getSubProtocol(Serializer serializer) {
 
 String wampErrorString(Error err) {
   String errStr = err.uri;
-  if (err.args.isNotEmpty) {
-    String args = err.args.map((arg) => arg.toString()).join(", ");
+  if (err.args != null) {
+    String args = err.args!.map((arg) => arg.toString()).join(", ");
     errStr += ": $args";
   }
-  if (err.kwargs.isNotEmpty) {
-    String kwargs = err.kwargs.entries.map((entry) => "${entry.key}=${entry.value}").join(", ");
+  if (err.kwargs != null) {
+    String kwargs = err.kwargs!.entries.map((entry) => "${entry.key}=${entry.value}").join(", ");
     errStr += ": $kwargs";
   }
   return errStr;
