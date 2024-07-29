@@ -38,6 +38,7 @@ class Session {
   }
 
   final Map<int, Completer<Result>> _callRequests = {};
+  final Map<int, Function(List<dynamic>? args, Map<String, dynamic>? kwargs)> _progressHandlerByRequestID = {};
   final Map<int, RegisterRequest> _registerRequests = {};
   final Map<int, Result Function(Invocation)> _registrations = {};
   final Map<int, UnregisterRequest> _unregisterRequests = {};
@@ -49,9 +50,18 @@ class Session {
 
   void _processIncomingMessage(msg.Message message) {
     if (message is msg.Result) {
-      var request = _callRequests.remove(message.requestID);
-      if (request != null) {
-        request.complete(Result(args: message.args, kwargs: message.kwargs, details: message.details));
+      var progress = message.details["progress"] ?? false;
+      if (progress) {
+        var progressHandler = _progressHandlerByRequestID[message.requestID];
+        if (progressHandler != null) {
+          progressHandler(message.args, message.kwargs);
+        }
+      } else {
+        var request = _callRequests.remove(message.requestID);
+        if (request != null) {
+          request.complete(Result(args: message.args, kwargs: message.kwargs, details: message.details));
+        }
+        _progressHandlerByRequestID.remove(message.requestID);
       }
     } else if (message is msg.Registered) {
       var request = _registerRequests.remove(message.requestID);
@@ -62,7 +72,15 @@ class Session {
     } else if (message is msg.Invocation) {
       var endpoint = _registrations[message.registrationID];
       if (endpoint != null) {
-        Result result = endpoint(Invocation(args: message.args, kwargs: message.kwargs, details: message.details));
+        var invocation = Invocation(args: message.args, kwargs: message.kwargs, details: message.details);
+        if (message.details["receive_progress"] ?? false) {
+          invocation.sendProgress = (args, kwargs) {
+            var yield = msg.Yield(message.requestID, args: args, kwargs: kwargs, options: {"progress": true});
+            var data = _wampSession.sendMessage(yield);
+            _baseSession.send(data);
+          };
+        }
+        Result result = endpoint(invocation);
         Object data = _wampSession.sendMessage(
           msg.Yield(message.requestID, args: result.args, kwargs: result.kwargs, options: result.details),
         );
@@ -162,6 +180,24 @@ class Session {
     _callRequests[call.requestID] = completer;
 
     _baseSession.send(_wampSession.sendMessage(call));
+
+    return completer.future;
+  }
+
+  Future<Result> callProgressive(
+    String procedure,
+    Function(List<dynamic>? args, Map<String, dynamic>? kwargs) progressHandler, {
+    List<dynamic>? args,
+    Map<String, dynamic>? kwargs,
+    Map<String, dynamic>? options,
+  }) async {
+    var call = msg.Call(_nextID, procedure, args: args, kwargs: kwargs, options: {"receive_progress": true});
+
+    var completer = Completer<Result>();
+    _callRequests[call.requestID] = completer;
+
+    _baseSession.send(_wampSession.sendMessage(call));
+    _progressHandlerByRequestID[call.requestID] = progressHandler;
 
     return completer.future;
   }
