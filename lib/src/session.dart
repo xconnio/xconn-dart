@@ -62,10 +62,18 @@ class Session {
     } else if (message is msg.Invocation) {
       var endpoint = _registrations[message.registrationID];
       if (endpoint != null) {
-        Result result = endpoint(Invocation(args: message.args, kwargs: message.kwargs, details: message.details));
-        Object data = _wampSession.sendMessage(
-          msg.Yield(message.requestID, args: result.args, kwargs: result.kwargs, options: result.details),
-        );
+        msg.Message msgToSend;
+        try {
+          var result = endpoint(Invocation(args: message.args, kwargs: message.kwargs, details: message.details));
+          msgToSend = msg.Yield(message.requestID, args: result.args, kwargs: result.kwargs, options: result.details);
+        } on ApplicationError catch (e) {
+          msgToSend = msg.Error(message.messageType(), message.requestID, e.message, args: e.args, kwargs: e.kwargs);
+        } on Exception catch (e) {
+          msgToSend =
+              msg.Error(message.messageType(), message.requestID, "wamp.error.runtime_error", args: [e.toString()]);
+        }
+
+        Object data = _wampSession.sendMessage(msgToSend);
         _baseSession.send(data);
       }
     } else if (message is msg.Unregistered) {
