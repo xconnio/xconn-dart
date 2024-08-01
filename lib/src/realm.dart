@@ -37,6 +37,7 @@ class Realm {
       case Yield.id:
       case Register.id:
       case Unregister.id:
+      case Error.id:
         MessageWithRecipient recipient = _dealer.receiveMessage(sessionID, msg);
         var client = _clients[recipient.recipient];
         client?.sendMessage(recipient.message);
