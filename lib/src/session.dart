@@ -208,12 +208,13 @@ class Session {
   }) {
     var publish = msg.Publish(_nextID, topic, args: args, kwargs: kwargs, options: options);
 
-    var completer = Completer<void>();
-    _publishRequests[publish.requestID] = completer;
     _baseSession.send(_wampSession.sendMessage(publish));
 
     var ack = options?["acknowledge"] ?? false;
     if (ack) {
+      var completer = Completer<void>();
+      _publishRequests[publish.requestID] = completer;
+
       return completer.future;
     }
 
