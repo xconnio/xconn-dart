@@ -176,13 +176,13 @@ class Session {
 
   Future<Registration> register(
     String procedure,
-    Result Function(Invocation invocation) endpoint, {
+    Result Function(Invocation invocation) invocationHandler, {
     Map<String, dynamic>? options,
   }) {
     var register = msg.Register(_nextID, procedure, options: options);
 
     var completer = Completer<Registration>();
-    _registerRequests[register.requestID] = RegisterRequest(completer, endpoint);
+    _registerRequests[register.requestID] = RegisterRequest(completer, invocationHandler);
 
     _baseSession.send(_wampSession.sendMessage(register));
 
@@ -221,11 +221,12 @@ class Session {
     return null;
   }
 
-  Future<Subscription> subscribe(String topic, void Function(Event event) endpoint, {Map<String, dynamic>? options}) {
+  Future<Subscription> subscribe(String topic, void Function(Event event) eventHandler,
+      {Map<String, dynamic>? options}) {
     var subscribe = msg.Subscribe(_nextID, topic, options: options);
 
     var completer = Completer<Subscription>();
-    _subscribeRequests[subscribe.requestID] = SubscribeRequest(completer, endpoint);
+    _subscribeRequests[subscribe.requestID] = SubscribeRequest(completer, eventHandler);
     _baseSession.send(_wampSession.sendMessage(subscribe));
 
     return completer.future;
