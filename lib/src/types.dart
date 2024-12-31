@@ -162,6 +162,8 @@ class Invocation {
   final List<dynamic> args;
   final Map<String, dynamic> kwargs;
   final Map<String, dynamic> details;
+
+  late Function(List<dynamic>? args, Map<String, dynamic>? kwargs) sendProgress;
 }
 
 class UnregisterRequest {
