@@ -19,8 +19,8 @@ class WAMPSessionJoiner {
   IClientAuthenticator? _authenticator;
   late Serializer _serializer;
 
-  Future<BaseSession> join(String uri, String realm) async {
-    WebSocketChannel channel = webSocketChannel(uri, getSubProtocol(_serializer));
+  Future<BaseSession> join(String uri, String realm, {Duration? keepAliveInterval}) async {
+    WebSocketChannel channel = webSocketChannel(uri, getSubProtocol(_serializer), keepAliveInterval: keepAliveInterval);
     await channel.ready;
 
     final joiner = Joiner(realm, serializer: _serializer, authenticator: _authenticator);
