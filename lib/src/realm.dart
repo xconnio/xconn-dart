@@ -3,6 +3,7 @@ import "package:wampproto/dealer.dart";
 import "package:wampproto/messages.dart";
 import "package:wampproto/session.dart";
 import "package:wampproto/types.dart";
+import "package:wampproto/uris.dart";
 
 import "package:xconn/src/types.dart";
 
@@ -78,6 +79,8 @@ class Realm {
         _dealer.removeSession(sessionID);
         _broker.removeSession(sessionID);
         var client = _clients[sessionID];
+        var goodbyeMsg = Goodbye({}, closeGoodbyeAndOut);
+        client?.sendMessage(goodbyeMsg);
         await client?.close();
         _clients.remove(sessionID);
         break;
