@@ -1,6 +1,7 @@
 import "dart:async";
 import "dart:collection";
 
+import "package:wampproto/auth.dart";
 import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
 import "package:wampproto/session.dart";
@@ -203,6 +204,19 @@ class UnsubscribeRequest {
 
   final Completer<void> future;
   final int subscriptionId;
+}
+
+class ClientConfig {
+  ClientConfig({
+    IClientAuthenticator? authenticator,
+    Serializer? serializer,
+    this.keepAliveInterval,
+  })  : authenticator = authenticator ?? AnonymousAuthenticator(""),
+        serializer = serializer ?? JSONSerializer();
+
+  final IClientAuthenticator authenticator;
+  final Serializer serializer;
+  final Duration? keepAliveInterval;
 }
 
 class ClientSideLocalBaseSession implements IBaseSession {
