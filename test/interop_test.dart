@@ -53,8 +53,7 @@ void main() async {
     "AnonymousAuth": AnonymousAuthenticator(""),
     "TicketAuth": TicketAuthenticator("ticket-user", {}, "ticket-pass"),
     "WAMPCRAAuth": WAMPCRAAuthenticator("wamp-cra-user", {}, "cra-secret"),
-    // FIXME: WAMPCRA with salt is broken in crossbar
-    // "WAMPCRAAuthSalted": WAMPCRAAuthenticator("wamp-cra-salt-user", {}, "cra-salt-secret"),
+    "WAMPCRAAuthSalted": WAMPCRAAuthenticator("wamp-cra-salt-user", {}, "cra-salt-secret"),
     "CryptosignAuth": CryptoSignAuthenticator(
       "cryptosign-user",
       {},
