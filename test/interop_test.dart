@@ -12,14 +12,14 @@ void main() async {
   const procedureAdd = "io.xconn.backend.add2";
 
   Future<void> testCall(IClientAuthenticator authenticator, Serializer serializer, String url) async {
-    var client = Client(authenticator: authenticator, serializer: serializer);
+    var client = Client(config: ClientConfig(authenticator: authenticator, serializer: serializer));
     var session = await client.connect(url, realm);
     var result = await session.call(procedureAdd, args: [2, 2]);
     expect(4, result.args[0]);
   }
 
   Future<void> testRPC(IClientAuthenticator authenticator, Serializer serializer, String url) async {
-    var client = Client(authenticator: authenticator, serializer: serializer);
+    var client = Client(config: ClientConfig(authenticator: authenticator, serializer: serializer));
     var session = await client.connect(url, realm);
 
     var reg = await session.register("io.xconn.test", (inv) {
@@ -34,7 +34,7 @@ void main() async {
   }
 
   Future<void> testPubSub(IClientAuthenticator authenticator, Serializer serializer, String url) async {
-    var client = Client(authenticator: authenticator, serializer: serializer);
+    var client = Client(config: ClientConfig(authenticator: authenticator, serializer: serializer));
     var session = await client.connect(url, realm);
 
     var args = ["Hello", "wamp"];
