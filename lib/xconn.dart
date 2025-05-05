@@ -10,4 +10,4 @@ export "src/exception.dart" show ApplicationError, ProtocolError;
 export "src/router.dart" show Router;
 export "src/server.dart" show Server;
 export "src/session.dart" show Session;
-export "src/types.dart" show Event, Invocation, Registration, Result, Subscription;
+export "src/types.dart" show ClientConfig, Event, Invocation, Registration, Result, Subscription;
