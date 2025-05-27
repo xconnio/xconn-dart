@@ -158,6 +158,10 @@ class Session {
     }
   }
 
+  int id() {
+    return _baseSession.id();
+  }
+
   Future<Result> call(
     String procedure, {
     List<dynamic>? args,
