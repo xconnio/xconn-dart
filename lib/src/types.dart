@@ -140,9 +140,14 @@ class Result {
 }
 
 class Registration {
-  Registration(this.registrationID);
+  Registration(this.registrationID, this._session);
 
   final int registrationID;
+  final Session _session;
+
+  Future<void> unregister() {
+    return _session.unregister(this);
+  }
 }
 
 class RegisterRequest {

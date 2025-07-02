@@ -30,7 +30,7 @@ void main() async {
     var result = await session.call("io.xconn.test", args: args);
     expect(args, result.args);
 
-    await session.unregister(reg);
+    await reg.unregister();
   }
 
   Future<void> testPubSub(IClientAuthenticator authenticator, Serializer serializer, String url) async {

@@ -40,10 +40,10 @@ void main() async {
   // Define a signal handler to catch the interrupt signal (Ctrl+C)
   ProcessSignal.sigint.watch().listen((signal) async {
     // Unregister procedure "io.xconn.echo"
-    await callee.unregister(echoRegistration);
+    await echoRegistration.unregister();
 
     // Unregister procedure "io.xconn.sum"
-    await callee.unregister(sumRegistration);
+    await sumRegistration.unregister();
 
     // Close connection to the server
     await callee.close();

@@ -57,7 +57,7 @@ class Session {
       var request = _registerRequests.remove(message.requestID);
       if (request != null) {
         _registrations[message.registrationID] = request.endpoint;
-        request.future.complete(Registration(message.registrationID));
+        request.future.complete(Registration(message.registrationID, this));
       }
     } else if (message is msg.Invocation) {
       var endpoint = _registrations[message.registrationID];
