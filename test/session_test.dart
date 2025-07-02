@@ -55,6 +55,6 @@ void main() {
   });
 
   test("unsubscribe from a topic", () async {
-    await session.unsubscribe(subscription);
+    await subscription.unsubscribe();
   });
 }

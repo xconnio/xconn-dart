@@ -44,7 +44,7 @@ void main() async {
 
     await session.publish("io.xconn.test", args: args, options: {"acknowledge": true});
 
-    await session.unsubscribe(sub);
+    await sub.unsubscribe();
   }
 
   final serverURLs = {"xconn": xconnURL, "crossbar": crossbarURL};

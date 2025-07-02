@@ -22,7 +22,7 @@ void main() async {
   // Define a signal handler to catch the interrupt signal (Ctrl+C)
   ProcessSignal.sigint.watch().listen((signal) async {
     // Unsubscribe from topic
-    await subscriber.unsubscribe(subscription);
+    await subscription.unsubscribe();
 
     // Close connection to the server
     await subscriber.close();

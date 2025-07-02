@@ -90,7 +90,7 @@ class Session {
     } else if (message is msg.Subscribed) {
       var request = _subscribeRequests.remove(message.requestID);
       if (request != null) {
-        var subscription = Subscription(message.subscriptionID, request.endpoint);
+        var subscription = Subscription(message.subscriptionID, request.endpoint, this);
         _subscriptions.putIfAbsent(message.subscriptionID, () => {});
         _subscriptions[message.subscriptionID]![subscription] = subscription;
 

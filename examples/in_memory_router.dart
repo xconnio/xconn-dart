@@ -36,5 +36,5 @@ void main() async {
   await session.publish(topicName, args: ["abc"], kwargs: {"one": 1}, options: {"acknowledge": true});
 
   // unsubscribe from a topic
-  await session.unsubscribe(subscription);
+  await subscription.unsubscribe();
 }
