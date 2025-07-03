@@ -173,9 +173,12 @@ class UnregisterRequest {
 }
 
 class Subscription {
-  Subscription(this.subscriptionID);
+  Subscription(this.subscriptionID, this._eventHandler);
 
   final int subscriptionID;
+  final void Function(Event) _eventHandler;
+
+  void Function(Event) get eventHandler => _eventHandler;
 }
 
 class SubscribeRequest {

@@ -43,7 +43,7 @@ class Session {
   final Map<int, UnregisterRequest> _unregisterRequests = {};
   final Map<int, Completer<void>> _publishRequests = {};
   final Map<int, SubscribeRequest> _subscribeRequests = {};
-  final Map<int, void Function(Event)> _subscriptions = {};
+  final Map<int, Map<Subscription, Subscription>> _subscriptions = {};
   final Map<int, UnsubscribeRequest> _unsubscribeRequests = {};
   final Completer<void> _goodbyeRequest = Completer();
 
@@ -90,13 +90,18 @@ class Session {
     } else if (message is msg.Subscribed) {
       var request = _subscribeRequests.remove(message.requestID);
       if (request != null) {
-        _subscriptions[message.subscriptionID] = request.endpoint;
-        request.future.complete(Subscription(message.subscriptionID));
+        var subscription = Subscription(message.subscriptionID, request.endpoint);
+        _subscriptions.putIfAbsent(message.subscriptionID, () => {});
+        _subscriptions[message.subscriptionID]![subscription] = subscription;
+
+        request.future.complete(subscription);
       }
     } else if (message is msg.Event) {
-      var endpoint = _subscriptions[message.subscriptionID];
-      if (endpoint != null) {
-        endpoint(Event(args: message.args, kwargs: message.kwargs, details: message.details));
+      var subscriptions = _subscriptions[message.subscriptionID];
+      if (subscriptions != null) {
+        subscriptions.forEach((_, subscription) {
+          subscription.eventHandler(Event(args: message.args, kwargs: message.kwargs, details: message.details));
+        });
       }
     } else if (message is msg.Unsubscribed) {
       var request = _unsubscribeRequests.remove(message.requestID);
@@ -237,6 +242,16 @@ class Session {
   }
 
   Future<void> unsubscribe(Subscription sub) {
+    final subscriptions = _subscriptions[sub.subscriptionID];
+    if (subscriptions != null) {
+      subscriptions.remove(sub);
+
+      if (subscriptions.isNotEmpty) {
+        _subscriptions[sub.subscriptionID] = subscriptions;
+        return Future.value();
+      }
+    }
+
     var unsubscribe = msg.Unsubscribe(_nextID, sub.subscriptionID);
 
     var completer = Completer<void>();
