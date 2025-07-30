@@ -57,7 +57,7 @@ class Session {
       var request = _registerRequests.remove(message.requestID);
       if (request != null) {
         _registrations[message.registrationID] = request.endpoint;
-        request.future.complete(Registration(message.registrationID));
+        request.future.complete(Registration(message.registrationID, this));
       }
     } else if (message is msg.Invocation) {
       var endpoint = _registrations[message.registrationID];
@@ -90,7 +90,7 @@ class Session {
     } else if (message is msg.Subscribed) {
       var request = _subscribeRequests.remove(message.requestID);
       if (request != null) {
-        var subscription = Subscription(message.subscriptionID, request.endpoint);
+        var subscription = Subscription(message.subscriptionID, request.endpoint, this);
         _subscriptions.putIfAbsent(message.subscriptionID, () => {});
         _subscriptions[message.subscriptionID]![subscription] = subscription;
 

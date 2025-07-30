@@ -25,7 +25,7 @@ void main() async {
   print("Result: args=${result.args}, kwargs=${result.kwargs}, details=${result.details}");
 
   // unregister a procedure
-  await session.unregister(registration);
+  await registration.unregister();
 
   // subscribe to a topic
   var subscription = await session.subscribe(topicName, (event) {
@@ -36,5 +36,5 @@ void main() async {
   await session.publish(topicName, args: ["abc"], kwargs: {"one": 1}, options: {"acknowledge": true});
 
   // unsubscribe from a topic
-  await session.unsubscribe(subscription);
+  await subscription.unsubscribe();
 }

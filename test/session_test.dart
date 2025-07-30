@@ -38,7 +38,7 @@ void main() {
   });
 
   test("unregister a procedure", () async {
-    await session.unregister(registration);
+    await registration.unregister();
   });
 
   const topicName = "io.xconn.test_topic";
@@ -55,6 +55,6 @@ void main() {
   });
 
   test("unsubscribe from a topic", () async {
-    await session.unsubscribe(subscription);
+    await subscription.unsubscribe();
   });
 }
