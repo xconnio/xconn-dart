@@ -132,10 +132,3 @@ void main() async {
 
 For more advanced usage, such as integrating an authenticator, refer to the sample tool available
 in the [bin](./bin) folder of the project.
-
-## Maintainer
-
-For questions or issues, contact the maintainers:
-
-- [omer@thing.com](mailto:omer@thing.com)
-- [muzzammil@xconn.io](mailto:muzzammil@xconn.io)
