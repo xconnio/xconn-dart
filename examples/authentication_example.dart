@@ -10,19 +10,19 @@ class AuthenticationExample {
   }
 
   Future<Session> connectTicket(String url, String realm, String authID, String ticket, Serializer serializer) {
-    var ticketAuthenticator = TicketAuthenticator(authID, {}, ticket);
+    var ticketAuthenticator = TicketAuthenticator(authID, ticket, {});
 
     return connect(url, realm, ticketAuthenticator, serializer);
   }
 
   Future<Session> connectCRA(String url, String realm, String authID, String secret, Serializer serializer) {
-    var craAuthenticator = WAMPCRAAuthenticator(authID, {}, secret);
+    var craAuthenticator = WAMPCRAAuthenticator(authID, secret, {});
 
     return connect(url, realm, craAuthenticator, serializer);
   }
 
   Future<Session> connectCryptoSign(String url, String realm, String authID, String privateKey, Serializer serializer) {
-    var cryptoSignAuthenticator = CryptoSignAuthenticator(authID, {}, privateKey);
+    var cryptoSignAuthenticator = CryptoSignAuthenticator(authID, privateKey, {});
 
     return connect(url, realm, cryptoSignAuthenticator, serializer);
   }
