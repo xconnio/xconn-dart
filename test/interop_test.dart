@@ -3,6 +3,7 @@ import "package:test/scaffolding.dart";
 import "package:wampproto/auth.dart";
 import "package:wampproto/serializers.dart";
 import "package:xconn/src/client.dart";
+import "package:xconn/src/session.dart";
 import "package:xconn/src/types.dart";
 
 void main() async {
@@ -11,6 +12,15 @@ void main() async {
   const nexusURL = "ws://localhost:8082/ws";
   const realm = "realm1";
   const procedureAdd = "io.xconn.backend.add2";
+
+  const ticketUserAuthID = "ticket-user";
+  const ticket = "ticket-pass";
+
+  const craUserAuthID = "wamp-cra-user";
+  const secret = "cra-secret";
+
+  const cryptosignUserAuthID = "cryptosign-user";
+  const privateKey = "150085398329d255ad69e82bf47ced397bcec5b8fbeecd28a80edbbd85b49081";
 
   Future<void> testCall(IClientAuthenticator authenticator, Serializer serializer, String url) async {
     var client = Client(config: ClientConfig(authenticator: authenticator, serializer: serializer));
@@ -52,14 +62,10 @@ void main() async {
 
   final authenticators = {
     "AnonymousAuth": AnonymousAuthenticator(""),
-    "TicketAuth": TicketAuthenticator("ticket-user", "ticket-pass", {}),
-    "WAMPCRAAuth": WAMPCRAAuthenticator("wamp-cra-user", "cra-secret", {}),
+    "TicketAuth": TicketAuthenticator(ticketUserAuthID, ticket, {}),
+    "WAMPCRAAuth": WAMPCRAAuthenticator(craUserAuthID, secret, {}),
     "WAMPCRAAuthSalted": WAMPCRAAuthenticator("wamp-cra-salt-user", "cra-salt-secret", {}),
-    "CryptosignAuth": CryptoSignAuthenticator(
-      "cryptosign-user",
-      "150085398329d255ad69e82bf47ced397bcec5b8fbeecd28a80edbbd85b49081",
-      {},
-    ),
+    "CryptosignAuth": CryptoSignAuthenticator(cryptosignUserAuthID, privateKey, {}),
   };
 
   final serializers = {
@@ -77,6 +83,26 @@ void main() async {
           await testPubSub(authenticator, serializer(), url);
         });
       });
+    });
+
+    test("AnonymousAuthWith$serverName", () async {
+      var session = await connectAnonymous(url, realm);
+      expect(session, isA<Session>());
+    });
+
+    test("TicketAuthWith$serverName", () async {
+      var session = await connectTicket(url, realm, ticketUserAuthID, ticket);
+      expect(session, isA<Session>());
+    });
+
+    test("CRAAuthWith$serverName", () async {
+      var session = await connectCRA(url, realm, craUserAuthID, secret);
+      expect(session, isA<Session>());
+    });
+
+    test("CryptosignAuthWith$serverName", () async {
+      var session = await connectCryptosign(url, realm, cryptosignUserAuthID, privateKey);
+      expect(session, isA<Session>());
     });
   });
 }
