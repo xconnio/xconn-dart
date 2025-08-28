@@ -8,6 +8,7 @@ import "package:xconn/src/types.dart";
 void main() async {
   const xconnURL = "ws://localhost:8080/ws";
   const crossbarURL = "ws://localhost:8081/ws";
+  const nexusURL = "ws://localhost:8082/ws";
   const realm = "realm1";
   const procedureAdd = "io.xconn.backend.add2";
 
@@ -47,7 +48,7 @@ void main() async {
     await sub.unsubscribe();
   }
 
-  final serverURLs = {"xconn": xconnURL, "crossbar": crossbarURL};
+  final serverURLs = {"xconn": xconnURL, "crossbar": crossbarURL, "nexus": nexusURL};
 
   final authenticators = {
     "AnonymousAuth": AnonymousAuthenticator(""),
