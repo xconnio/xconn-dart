@@ -30,9 +30,9 @@ Future<Session> connectTicket(String uri, String realm, String authid, String ti
   return _connect(uri, realm, ticketAuthenticator);
 }
 
-Future<Session> connectCRA(String uri, String realm, String authid, String secret) async {
-  final craAuthenticator = WAMPCRAAuthenticator(authid, secret, null);
-  return _connect(uri, realm, craAuthenticator);
+Future<Session> connectWAMPCRA(String uri, String realm, String authid, String secret) async {
+  final wampcraAuthenticator = WAMPCRAAuthenticator(authid, secret, null);
+  return _connect(uri, realm, wampcraAuthenticator);
 }
 
 Future<Session> connectCryptosign(String uri, String realm, String authid, String privateKey) async {

@@ -96,7 +96,7 @@ void main() async {
     });
 
     test("CRAAuthWith$serverName", () async {
-      var session = await connectCRA(url, realm, craUserAuthID, secret);
+      var session = await connectWAMPCRA(url, realm, craUserAuthID, secret);
       expect(session, isA<Session>());
     });
 
