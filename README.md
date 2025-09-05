@@ -80,37 +80,24 @@ void exampleCall(Session session) async {
 
 ### Authentication
 
-Authentication is straightforward. Simply create the object of the desired authenticator and pass it
-to the Client.
+Authentication is straightforward.
 
 **Ticket Auth**
 
 ```dart
-void main() async {
-  var ticketAuthenticator = TicketAuthenticator(ticket, authid);
-  var client = Client(authenticator: ticketAuthenticator);
-  var session = await client.connect("ws://localhost:8080/ws", "realm1");
-}
+var session = await connectTicket("ws://localhost:8080/ws", "realm1", "ticketUserAuthID", "ticket");
 ```
 
 **Challenge Response Auth**
 
 ```dart
-void main() async {
-  var craAuthenticator = WAMPCRAAuthenticator(secret, authid);
-  var client = Client(authenticator: craAuthenticator);
-  var session = await client.connect("ws://localhost:8080/ws", "realm1");
-}
+var session = await connectCRA("ws://localhost:8080/ws", "realm1", "craUserAuthID", "secret");
 ```
 
 **Cryptosign Auth**
 
 ```dart
-void main() async {
-  var cryptosignAuthenticator = CryptoSignAuthenticator(privateKey, authid);
-  var client = Client(authenticator: cryptosignAuthenticator);
-  var session = await client.connect("ws://localhost:8080/ws", "realm1");
-}
+var session = await connectCryptosign("ws://localhost:8080/ws", "realm1", "cryptosignUserAuthID", "privateKey");
 ```
 
 For more detailed examples or usage, refer to the [examples](./examples) folder of the project.
