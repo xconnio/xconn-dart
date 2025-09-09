@@ -22,6 +22,7 @@ class Session {
 
   final IBaseSession _baseSession;
   late WAMPSession _wampSession;
+  bool _connected = true;
 
   final SessionScopeIDGenerator _idGen = SessionScopeIDGenerator();
 
@@ -35,6 +36,10 @@ class Session {
     return _goodbyeRequest.future
         .timeout(const Duration(seconds: 10), onTimeout: () async => _baseSession.close())
         .whenComplete(() async => _baseSession.close());
+  }
+
+  bool connected() {
+    return _connected;
   }
 
   final Map<int, Completer<Result>> _callRequests = {};
@@ -157,10 +162,15 @@ class Session {
           throw ProtocolError(wampErrorString(message));
       }
     } else if (message is msg.Goodbye) {
-      _goodbyeRequest.complete();
+      _markDisconnected();
     } else {
       throw ProtocolError("Unexpected message type ${message.runtimeType}");
     }
+  }
+
+  void _markDisconnected() {
+    _connected = false;
+    _goodbyeRequest.complete();
   }
 
   int id() {

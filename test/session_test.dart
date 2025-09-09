@@ -57,4 +57,12 @@ void main() {
   test("unsubscribe from a topic", () async {
     await subscription.unsubscribe();
   });
+
+  test("close a session", ()async{
+    expect(session.connected(), true);
+
+    await session.close();
+
+    expect(session.connected(), false);
+  });
 }
