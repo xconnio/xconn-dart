@@ -12,12 +12,8 @@ import "package:xconn/src/types.dart";
 class Session {
   Session(this._baseSession) {
     _wampSession = WAMPSession(serializer: _baseSession.serializer());
-    Future.microtask(() async {
-      while (true) {
-        var message = await _baseSession.receive();
-        _processIncomingMessage(_wampSession.receive(message));
-      }
-    });
+
+    Future.microtask(_waitForRouterMessages);
   }
 
   final IBaseSession _baseSession;
@@ -27,6 +23,20 @@ class Session {
   final SessionScopeIDGenerator _idGen = SessionScopeIDGenerator();
 
   int get _nextID => _idGen.next();
+
+  final Completer<void> _disconnectCompleter = Completer<void>();
+  Future<void> get onDone => _disconnectCompleter.future;
+
+  Future<void> _waitForRouterMessages() async {
+    try {
+      while (true) {
+        final message = await _baseSession.receive();
+        _processIncomingMessage(_wampSession.receive(message));
+      }
+    } catch (_) {
+      _markDisconnected();
+    }
+  }
 
   Future<void> close() async {
     var goodbyeMsg = msg.Goodbye({}, closeRealm);
@@ -175,11 +185,20 @@ class Session {
   }
 
   void _markDisconnected() {
+    if (!_isConnected) return;
     _isConnected = false;
+
+    if (!_disconnectCompleter.isCompleted) {
+      _disconnectCompleter.complete();
+    }
+
     if (_onDisconnect != null) {
       _onDisconnect?.call();
     }
-    _goodbyeRequest.complete();
+
+    if (!_goodbyeRequest.isCompleted) {
+      _goodbyeRequest.complete();
+    }
   }
 
   int id() {
