@@ -42,6 +42,12 @@ class Session {
     return _connected;
   }
 
+  void Function()? _onDisconnect;
+
+  void onDisconnect(void Function() callback) {
+    _onDisconnect = callback;
+  }
+
   final Map<int, Completer<Result>> _callRequests = {};
   final Map<int, RegisterRequest> _registerRequests = {};
   final Map<int, Result Function(Invocation)> _registrations = {};
@@ -170,6 +176,9 @@ class Session {
 
   void _markDisconnected() {
     _connected = false;
+    if (_onDisconnect != null) {
+      _onDisconnect?.call();
+    }
     _goodbyeRequest.complete();
   }
 
