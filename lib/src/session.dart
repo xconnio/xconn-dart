@@ -14,6 +14,9 @@ class Session {
     _wampSession = WAMPSession(serializer: _baseSession.serializer());
 
     Future.microtask(_waitForRouterMessages);
+    _baseSession.done.then((_) {
+      _markDisconnected();
+    });
   }
 
   final IBaseSession _baseSession;
