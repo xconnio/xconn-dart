@@ -57,4 +57,18 @@ void main() {
   test("unsubscribe from a topic", () async {
     await subscription.unsubscribe();
   });
+
+  test("close a session", () async {
+    var disconnected = false;
+    session.onDisconnect(() {
+      disconnected = true;
+    });
+
+    expect(session.connected(), true);
+
+    await session.close();
+
+    expect(session.connected(), false);
+    expect(disconnected, true);
+  });
 }
