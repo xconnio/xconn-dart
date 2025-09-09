@@ -64,11 +64,11 @@ void main() {
       disconnected = true;
     });
 
-    expect(session.connected(), true);
+    expect(session.isConnected(), true);
 
     await session.close();
 
-    expect(session.connected(), false);
+    expect(session.isConnected(), false);
     expect(disconnected, true);
   });
 }
