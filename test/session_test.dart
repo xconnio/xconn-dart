@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:test/expect.dart";
 import "package:test/scaffolding.dart";
 
@@ -58,7 +60,19 @@ void main() {
     await subscription.unsubscribe();
   });
 
+  Server startRouter() {
+    var router = Router()..addRealm("realm1");
+    var server = Server(router);
+    unawaited(server.start("localhost", 8084));
+    return server;
+  }
+
   test("close a session", () async {
+    var server = startRouter();
+
+    final session = await connectAnonymous("ws://localhost:8084", "realm1");
+    expect(session.isConnected(), isTrue);
+
     var disconnected = false;
     session.onDisconnect(() {
       disconnected = true;
@@ -70,5 +84,17 @@ void main() {
 
     expect(session.isConnected(), false);
     expect(disconnected, true);
+
+    await server.close();
+  });
+
+  test("disconnect detection", () async {
+    var server = startRouter();
+
+    final session = await connectAnonymous("ws://localhost:8084", "realm1");
+    expect(session.isConnected(), isTrue);
+
+    await server.close();
+    expect(session.isConnected(), isFalse);
   });
 }

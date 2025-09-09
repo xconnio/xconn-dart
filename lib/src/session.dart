@@ -18,6 +18,9 @@ class Session {
         _processIncomingMessage(_wampSession.receive(message));
       }
     });
+    _baseSession.done.then((_) {
+      _markDisconnected();
+    });
   }
 
   final IBaseSession _baseSession;
@@ -175,11 +178,18 @@ class Session {
   }
 
   void _markDisconnected() {
+    if (!_isConnected) {
+      return;
+    }
     _isConnected = false;
+
     if (_onDisconnect != null) {
       _onDisconnect?.call();
     }
-    _goodbyeRequest.complete();
+
+    if (!_goodbyeRequest.isCompleted) {
+      _goodbyeRequest.complete();
+    }
   }
 
   int id() {

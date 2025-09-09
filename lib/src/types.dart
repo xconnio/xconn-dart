@@ -50,6 +50,10 @@ abstract class IBaseSession {
   Future<void> close() async {
     throw UnimplementedError();
   }
+
+  Future<void> get done {
+    throw UnimplementedError();
+  }
 }
 
 class BaseSession extends IBaseSession {
@@ -64,6 +68,9 @@ class BaseSession extends IBaseSession {
   final StreamSubscription<dynamic> _wsStreamSubscription;
   SessionDetails sessionDetails;
   final Serializer _serializer;
+
+  @override
+  Future<void> get done => _ws.sink.done;
 
   @override
   int id() {
@@ -250,6 +257,9 @@ class ClientSideLocalBaseSession implements IBaseSession {
   late Completer _completer;
 
   @override
+  Future<void> get done async {}
+
+  @override
   int id() => _id;
 
   @override
@@ -319,6 +329,9 @@ class ServerSideLocalBaseSession extends IBaseSession {
   final String _authrole;
   final Serializer _serializer;
   final ClientSideLocalBaseSession? _other;
+
+  @override
+  Future<void> get done async {}
 
   @override
   int id() => _id;
