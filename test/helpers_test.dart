@@ -5,7 +5,6 @@ import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
 
 import "package:xconn/src/helpers.dart";
-import "package:xconn/xconn.dart";
 
 class TestSerializer implements Serializer {
   @override
@@ -20,15 +19,6 @@ class TestSerializer implements Serializer {
 }
 
 void main() {
-  test("disconnect detection", () async {
-    final session = await connectAnonymous("ws://localhost:8080", "realm1");
-
-    await Future.delayed(const Duration(seconds: 5));
-
-    print(session.isConnected());
-    expect(session.isConnected(), isFalse);
-  });
-
   test("getSubProtocol", () {
     // with json Serializer
     var jsonProtocol = getSubProtocol(JSONSerializer());

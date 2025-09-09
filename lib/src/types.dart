@@ -116,16 +116,6 @@ class BaseSession extends IBaseSession {
         completer.complete(data);
         _wsStreamSubscription.pause();
       })
-      ..onError((err, _) {
-        if (!completer.isCompleted) {
-          completer.completeError(err);
-        }
-      })
-      ..onDone(() {
-        if (!completer.isCompleted) {
-          completer.completeError(StateError("WebSocket closed"));
-        }
-      })
       ..resume();
     return completer.future;
   }
