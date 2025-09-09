@@ -22,7 +22,7 @@ class Session {
 
   final IBaseSession _baseSession;
   late WAMPSession _wampSession;
-  bool _connected = true;
+  bool _isConnected = true;
 
   final SessionScopeIDGenerator _idGen = SessionScopeIDGenerator();
 
@@ -38,8 +38,8 @@ class Session {
         .whenComplete(() async => _baseSession.close());
   }
 
-  bool connected() {
-    return _connected;
+  bool isConnected() {
+    return _isConnected;
   }
 
   void Function()? _onDisconnect;
@@ -175,7 +175,7 @@ class Session {
   }
 
   void _markDisconnected() {
-    _connected = false;
+    _isConnected = false;
     if (_onDisconnect != null) {
       _onDisconnect?.call();
     }
