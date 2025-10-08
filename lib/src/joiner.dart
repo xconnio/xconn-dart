@@ -12,7 +12,7 @@ import "package:xconn/src/web_socket_channel_io.dart"
 
 class WAMPSessionJoiner {
   WAMPSessionJoiner({IClientAuthenticator? authenticator, Serializer? serializer}) {
-    _serializer = serializer ?? JSONSerializer();
+    _serializer = serializer ?? CBORSerializer();
     _authenticator = authenticator;
   }
 

@@ -233,7 +233,7 @@ class ClientConfig {
     Serializer? serializer,
     this.keepAliveInterval,
   })  : authenticator = authenticator ?? AnonymousAuthenticator(""),
-        serializer = serializer ?? JSONSerializer();
+        serializer = serializer ?? CBORSerializer();
 
   final IClientAuthenticator authenticator;
   final Serializer serializer;
