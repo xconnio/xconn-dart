@@ -97,4 +97,30 @@ void main() {
     await server.close();
     expect(session.isConnected(), isFalse);
   });
+
+  test("progressive call results", () async {
+    await session.register("foo.bar.progress", (inv) {
+      // Send progress
+      for (int i = 1; i <= 3; i++) {
+        inv.sendProgress([i], null);
+      }
+      // Return final result
+      return Result(args: ["done"]);
+    });
+
+    // Store received progress updates
+    final List<int> progressUpdates = [];
+
+    var result = await session.callProgress("foo.bar.progress", (Result result) {
+      var progress = result.args[0];
+
+      // Collect received progress
+      progressUpdates.add(progress);
+    });
+
+    // Verify progressive updates received correctly
+    expect(progressUpdates, [1, 2, 3]);
+    // Verify the final result
+    expect(result.args[0], "done");
+  });
 }
