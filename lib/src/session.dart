@@ -309,7 +309,7 @@ class Session {
 
     var completer = Completer<Result>();
     _callRequests[call.requestID] = completer;
-    call.options["receive_progress"]= true;
+    call.options["receive_progress"] = true;
     _progressHandlers[call.requestID] = progressReceiver;
     _baseSession.send(_wampSession.sendMessage(call));
 
