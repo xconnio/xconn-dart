@@ -53,8 +53,9 @@ class Session {
 
   final Map<int, Completer<Result>> _callRequests = {};
   final Map<int, Function(Result result)> _progressHandlers = {};
+  final Map<int, Function(List<dynamic>? args, Map<String, dynamic>? kwargs)> _progressFunc = {};
   final Map<int, RegisterRequest> _registerRequests = {};
-  final Map<int, Result Function(Invocation)> _registrations = {};
+  final Map<int, Result? Function(Invocation)> _registrations = {};
   final Map<int, UnregisterRequest> _unregisterRequests = {};
   final Map<int, Completer<void>> _publishRequests = {};
   final Map<int, SubscribeRequest> _subscribeRequests = {};
@@ -87,16 +88,40 @@ class Session {
       var endpoint = _registrations[message.registrationID];
       if (endpoint != null) {
         var invocation = Invocation(args: message.args, kwargs: message.kwargs, details: message.details);
-        if (message.details["receive_progress"] ?? false) {
-          invocation.sendProgress = (args, kwargs) {
+
+        bool receiveProgress = message.details["receive_progress"] ?? false;
+        bool progress = message.details["progress"] ?? false;
+        if (receiveProgress) {
+          void progressFunc(args, kwargs) {
             var yield = msg.Yield(message.requestID, args: args, kwargs: kwargs, options: {"progress": true});
             var data = _wampSession.sendMessage(yield);
             _baseSession.send(data);
-          };
+          }
+
+          invocation.sendProgress = progressFunc;
+          if (progress) {
+            _progressFunc[message.requestID] = progressFunc;
+          }
         }
+
+        if (progress && !receiveProgress) {
+          final progressFunction = _progressFunc[message.requestID];
+
+          if (progressFunction != null) {
+            invocation.sendProgress = progressFunction;
+          }
+        }
+
+        if (!progress && !receiveProgress) {
+          _progressFunc.remove(message.requestID);
+        }
+
         msg.Message msgToSend;
         try {
           var result = endpoint(invocation);
+          if (result == null) {
+            return;
+          }
           msgToSend = msg.Yield(message.requestID, args: result.args, kwargs: result.kwargs, options: result.details);
         } on ApplicationError catch (e) {
           msgToSend = msg.Error(message.messageType(), message.requestID, e.message, args: e.args, kwargs: e.kwargs);
@@ -249,9 +274,34 @@ class Session {
     return _call(call);
   }
 
+  Future<Result> callProgressive(String procedure, Progress Function() progressFunc) {
+    var progress = progressFunc();
+    var call = msg.Call(_nextID, procedure, args: progress.args, kwargs: progress.kwargs, options: progress.options);
+
+    var completer = Completer<Result>();
+    _callRequests[call.requestID] = completer;
+
+    _baseSession.send(_wampSession.sendMessage(call));
+
+    var callInProgress = progress.options["progress"] ?? false;
+    Future(() {
+      while (callInProgress) {
+        var prog = progressFunc();
+
+        var call1 = msg.Call(call.requestID, procedure, args: prog.args, kwargs: prog.kwargs, options: prog.options);
+
+        _baseSession.send(_wampSession.sendMessage(call1));
+
+        callInProgress = prog.options["progress"] ?? false;
+      }
+    });
+
+    return completer.future;
+  }
+
   Future<Registration> register(
     String procedure,
-    Result Function(Invocation invocation) invocationHandler, {
+    Result? Function(Invocation invocation) invocationHandler, {
     Map<String, dynamic>? options,
   }) {
     var register = msg.Register(_nextID, procedure, options: options);
