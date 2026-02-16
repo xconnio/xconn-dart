@@ -299,6 +299,36 @@ class Session {
     return completer.future;
   }
 
+  Future<Result> callProgressiveProgress(
+    String procedure,
+    Progress Function() progressSender,
+    Function(Result result) progressReceiver,
+  ) {
+    var progress = progressSender();
+    var call = msg.Call(_nextID, procedure, args: progress.args, kwargs: progress.kwargs, options: progress.options);
+
+    var completer = Completer<Result>();
+    _callRequests[call.requestID] = completer;
+    call.options["receive_progress"]= true;
+    _progressHandlers[call.requestID] = progressReceiver;
+    _baseSession.send(_wampSession.sendMessage(call));
+
+    var callInProgress = progress.options["progress"] ?? false;
+    Future(() {
+      while (callInProgress) {
+        var prog = progressSender();
+
+        var call1 = msg.Call(call.requestID, procedure, args: prog.args, kwargs: prog.kwargs, options: prog.options);
+
+        _baseSession.send(_wampSession.sendMessage(call1));
+
+        callInProgress = prog.options["progress"] ?? false;
+      }
+    });
+
+    return completer.future;
+  }
+
   Future<Registration> register(
     String procedure,
     Result? Function(Invocation invocation) invocationHandler, {
