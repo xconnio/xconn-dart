@@ -33,7 +33,7 @@ void main() async {
     var client = Client(config: ClientConfig(authenticator: authenticator, serializer: serializer));
     var session = await client.connect(url, realm);
 
-    var reg = await session.register("io.xconn.test", (inv) {
+    var reg = await session.register("io.xconn.test", (inv) async {
       return Result(args: inv.args, kwargs: inv.kwargs);
     });
 

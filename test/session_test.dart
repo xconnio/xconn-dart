@@ -20,7 +20,7 @@ void main() {
   const procedureName = "io.xconn.test_procedure";
   late Registration registration;
   test("register a procedure", () async {
-    registration = await session.register(procedureName, (inv) {
+    registration = await session.register(procedureName, (inv) async {
       print("Invocation: args=${inv.args}, kwargs=${inv.kwargs}, details=${inv.details}");
       return Result(args: inv.args, kwargs: inv.kwargs, details: inv.details);
     });
@@ -99,7 +99,7 @@ void main() {
   });
 
   test("progressive call results", () async {
-    await session.register("foo.bar.progress", (inv) {
+    await session.register("foo.bar.progress", (inv) async {
       // Send progress
       for (int i = 1; i <= 3; i++) {
         inv.sendProgress([i], null);

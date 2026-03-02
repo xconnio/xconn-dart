@@ -6,7 +6,7 @@ const testProcedureEcho = "io.xconn.echo";
 const testProcedureSum = "io.xconn.sum";
 
 // Function to handle received Invocation for "io.xconn.echo"
-Result sum(Invocation event) {
+Future<Result> sum(Invocation event) async {
   print("Received Invocation: args=${event.args}, kwargs=${event.kwargs}, details=${event.details}");
   var sum = 0;
   for (final arg in event.args) {
@@ -23,7 +23,7 @@ void main() async {
   var callee = await client.connect("ws://localhost:8080/ws", "realm1");
 
   // Define function to handle received Invocation for "io.xconn.echo"
-  Result echo(Invocation event) {
+  Future<Result> echo(Invocation event) async {
     print("Received Invocation: args=${event.args}, kwargs=${event.kwargs}, details=${event.details}");
 
     return Result(args: event.args, kwargs: event.kwargs);

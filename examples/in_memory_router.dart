@@ -16,7 +16,7 @@ void main() async {
   var session = Session(clientSideBase);
 
   // register a procedure
-  var registration = await session.register(procedureName, (inv) {
+  var registration = await session.register(procedureName, (inv) async {
     return Result(args: inv.args, kwargs: inv.kwargs, details: inv.details);
   });
 
