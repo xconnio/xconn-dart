@@ -8,7 +8,7 @@ Future<void> main() async {
   var session = await client.connect("ws://localhost:8080/ws", "realm1");
 
   // Define function to handle received Invocation for "io.xconn.progress.download"
-  Result downloadHandler(Invocation inv) {
+  Future<Result> downloadHandler(Invocation inv) async {
     const int fileSize = 100; // Simulate a file size of 100 units
 
     for (int i = 0; i <= fileSize; i += 10) {

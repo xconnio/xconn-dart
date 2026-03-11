@@ -1,6 +1,5 @@
 import "package:wampproto/auth.dart";
 
-import "package:xconn/src/types.dart";
 import "package:xconn/xconn.dart";
 
 class AuthenticationExample {

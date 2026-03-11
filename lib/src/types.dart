@@ -161,7 +161,7 @@ class RegisterRequest {
   RegisterRequest(this.future, this.endpoint);
 
   final Completer<Registration> future;
-  final Result? Function(Invocation) endpoint;
+  final Future<Result?> Function(Invocation) endpoint;
 }
 
 class Invocation {

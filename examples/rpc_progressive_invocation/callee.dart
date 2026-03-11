@@ -7,7 +7,7 @@ const procedureProgressUpload = "io.xconn.progress.upload";
 Future<void> main() async {
   var callee = await connectAnonymous("ws://localhost:8080/ws", "realm1");
 
-  Result? downloadHandler(Invocation inv) {
+  Future<Result?> downloadHandler(Invocation inv) async {
     final isProgress = inv.details["progress"] as bool? ?? false;
 
     // Handle the progressive chunk

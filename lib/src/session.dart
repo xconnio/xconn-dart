@@ -15,7 +15,7 @@ class Session {
     Future.microtask(() async {
       while (true) {
         var message = await _baseSession.receive();
-        _processIncomingMessage(_wampSession.receive(message));
+        unawaited(_processIncomingMessageAsync(_wampSession.receive(message)));
       }
     });
     _baseSession.done.then((_) {
@@ -55,7 +55,7 @@ class Session {
   final Map<int, Function(Result result)> _progressHandlers = {};
   final Map<int, Function(List<dynamic>? args, Map<String, dynamic>? kwargs)> _progressFunc = {};
   final Map<int, RegisterRequest> _registerRequests = {};
-  final Map<int, Result? Function(Invocation)> _registrations = {};
+  final Map<int, Future<Result?> Function(Invocation)> _registrations = {};
   final Map<int, UnregisterRequest> _unregisterRequests = {};
   final Map<int, Completer<void>> _publishRequests = {};
   final Map<int, SubscribeRequest> _subscribeRequests = {};
@@ -63,7 +63,7 @@ class Session {
   final Map<int, UnsubscribeRequest> _unsubscribeRequests = {};
   final Completer<void> _goodbyeRequest = Completer();
 
-  void _processIncomingMessage(msg.Message message) {
+  Future<void> _processIncomingMessageAsync(msg.Message message) async {
     if (message is msg.Result) {
       var progress = message.details["progress"] ?? false;
       if (progress) {
@@ -116,22 +116,24 @@ class Session {
           _progressFunc.remove(message.requestID);
         }
 
-        msg.Message msgToSend;
-        try {
-          var result = endpoint(invocation);
-          if (result == null) {
-            return;
+        Future.microtask(() async {
+          msg.Message msgToSend;
+          try {
+            var result = await endpoint(invocation);
+            if (result == null) {
+              return;
+            }
+            msgToSend = msg.Yield(message.requestID, args: result.args, kwargs: result.kwargs, options: result.details);
+          } on ApplicationError catch (e) {
+            msgToSend = msg.Error(message.messageType(), message.requestID, e.message, args: e.args, kwargs: e.kwargs);
+          } on Exception catch (e) {
+            msgToSend =
+                msg.Error(message.messageType(), message.requestID, "wamp.error.runtime_error", args: [e.toString()]);
           }
-          msgToSend = msg.Yield(message.requestID, args: result.args, kwargs: result.kwargs, options: result.details);
-        } on ApplicationError catch (e) {
-          msgToSend = msg.Error(message.messageType(), message.requestID, e.message, args: e.args, kwargs: e.kwargs);
-        } on Exception catch (e) {
-          msgToSend =
-              msg.Error(message.messageType(), message.requestID, "wamp.error.runtime_error", args: [e.toString()]);
-        }
 
-        Object data = _wampSession.sendMessage(msgToSend);
-        _baseSession.send(data);
+          Object data = _wampSession.sendMessage(msgToSend);
+          _baseSession.send(data);
+        });
       }
     } else if (message is msg.Unregistered) {
       var request = _unregisterRequests.remove(message.requestID);
@@ -303,7 +305,7 @@ class Session {
     String procedure,
     Progress Function() progressSender,
     Function(Result result) progressReceiver,
-  ) {
+  ) async {
     var progress = progressSender();
     var call = msg.Call(_nextID, procedure, args: progress.args, kwargs: progress.kwargs, options: progress.options);
 
@@ -313,8 +315,9 @@ class Session {
     _progressHandlers[call.requestID] = progressReceiver;
     _baseSession.send(_wampSession.sendMessage(call));
 
-    var callInProgress = progress.options["progress"] ?? false;
-    Future(() {
+    Future<void> sendNextChunk() async {
+      var callInProgress = progress.options["progress"] ?? false;
+
       while (callInProgress) {
         var prog = progressSender();
 
@@ -324,14 +327,16 @@ class Session {
 
         callInProgress = prog.options["progress"] ?? false;
       }
-    });
+    }
+
+    sendNextChunk();
 
     return completer.future;
   }
 
   Future<Registration> register(
     String procedure,
-    Result? Function(Invocation invocation) invocationHandler, {
+    Future<Result?> Function(Invocation invocation) invocationHandler, {
     Map<String, dynamic>? options,
   }) {
     var register = msg.Register(_nextID, procedure, options: options);
