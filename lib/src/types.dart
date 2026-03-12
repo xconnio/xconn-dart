@@ -6,130 +6,75 @@ import "package:wampproto/messages.dart";
 import "package:wampproto/serializers.dart";
 import "package:wampproto/session.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
+import "package:xconn/src/exception.dart";
 
 import "package:xconn/src/router.dart";
 import "package:xconn/src/session.dart";
 
 abstract class IBaseSession {
-  int id() {
-    throw UnimplementedError();
-  }
+  int id();
 
-  String realm() {
-    throw UnimplementedError();
-  }
+  String realm();
 
-  String authid() {
-    throw UnimplementedError();
-  }
+  String authid();
 
-  String authrole() {
-    throw UnimplementedError();
-  }
+  String authrole();
 
-  Serializer serializer() {
-    throw UnimplementedError();
-  }
+  Serializer serializer();
 
-  void send(Object data) {
-    throw UnimplementedError();
-  }
+  Future<Object> read();
 
-  Future<Object> receive() async {
-    throw UnimplementedError();
-  }
+  Future<void> write(Object payload);
 
-  void sendMessage(Message msg) {
-    throw UnimplementedError();
-  }
+  Future<Message> readMessage();
 
-  Future<Message> receiveMessage() async {
-    throw UnimplementedError();
-  }
+  Future<void> writeMessage(Message msg);
 
-  Future<void> close() async {
-    throw UnimplementedError();
-  }
-
-  Future<void> get done {
-    throw UnimplementedError();
-  }
+  Future<void> close();
 }
 
-class BaseSession extends IBaseSession {
-  BaseSession(this._ws, this._wsStreamSubscription, this.sessionDetails, this._serializer) {
-    // close cleanly on abrupt client disconnect
-    _wsStreamSubscription.onDone(() async {
-      await close();
-    });
-  }
+class BaseSession implements IBaseSession {
+  BaseSession(this._peer, this._details, this._serializer);
 
-  final WebSocketChannel _ws;
-  final StreamSubscription<dynamic> _wsStreamSubscription;
-  SessionDetails sessionDetails;
+  final Peer _peer;
+  final SessionDetails _details;
   final Serializer _serializer;
 
   @override
-  Future<void> get done => _ws.sink.done;
+  int id() => _details.sessionID;
 
   @override
-  int id() {
-    return sessionDetails.sessionID;
+  String realm() => _details.realm;
+
+  @override
+  String authid() => _details.authid;
+
+  @override
+  String authrole() => _details.authrole;
+
+  @override
+  Serializer serializer() => _serializer;
+
+  @override
+  Future<Object> read() => _peer.read();
+
+  @override
+  Future<void> write(Object payload) => _peer.write(payload);
+
+  @override
+  Future<Message> readMessage() async {
+    final payload = await read();
+    return _serializer.deserialize(payload);
   }
 
   @override
-  String realm() {
-    return sessionDetails.realm;
+  Future<void> writeMessage(Message msg) async {
+    final payload = _serializer.serialize(msg);
+    await write(payload);
   }
 
   @override
-  String authid() {
-    return sessionDetails.authid;
-  }
-
-  @override
-  String authrole() {
-    return sessionDetails.authrole;
-  }
-
-  @override
-  Serializer serializer() {
-    return _serializer;
-  }
-
-  @override
-  void send(Object data) {
-    _ws.sink.add(data);
-  }
-
-  @override
-  void sendMessage(Message msg) {
-    send(_serializer.serialize(msg));
-  }
-
-  @override
-  Future<Object> receive() async {
-    var completer = Completer<Object>();
-
-    _wsStreamSubscription
-      ..onData((data) {
-        completer.complete(data);
-        _wsStreamSubscription.pause();
-      })
-      ..resume();
-    return completer.future;
-  }
-
-  @override
-  Future<Message> receiveMessage() async {
-    return _serializer.deserialize(await receive());
-  }
-
-  @override
-  Future<void> close() async {
-    await _wsStreamSubscription.cancel();
-    await _ws.sink.close();
-  }
+  Future<void> close() => _peer.close();
 }
 
 class Result {
@@ -273,9 +218,6 @@ class ClientSideLocalBaseSession implements IBaseSession {
   late Completer _completer;
 
   @override
-  Future<void> get done async {}
-
-  @override
   int id() => _id;
 
   @override
@@ -291,12 +233,12 @@ class ClientSideLocalBaseSession implements IBaseSession {
   Serializer serializer() => _serializer;
 
   @override
-  Future send(Object data) async {
-    await sendMessage(_serializer.deserialize(data));
+  Future write(Object data) async {
+    await writeMessage(_serializer.deserialize(data));
   }
 
   @override
-  Future<Object> receive() async {
+  Future<Object> read() async {
     if (_incomingMessages.isNotEmpty) {
       return _incomingMessages.removeFirst();
     }
@@ -305,17 +247,17 @@ class ClientSideLocalBaseSession implements IBaseSession {
     _completer = Completer();
 
     // Recursive call because in some cases there might still be no message available even after waiting
-    return receive();
+    return read();
   }
 
   @override
-  Future<void> sendMessage(Message msg) async {
+  Future<void> writeMessage(Message msg) async {
     return _router.receiveMessage(this, msg);
   }
 
   @override
-  Future<Message> receiveMessage() async {
-    return _serializer.deserialize(await receive());
+  Future<Message> readMessage() async {
+    return _serializer.deserialize(await read());
   }
 
   @override
@@ -347,9 +289,6 @@ class ServerSideLocalBaseSession extends IBaseSession {
   final ClientSideLocalBaseSession? _other;
 
   @override
-  Future<void> get done async {}
-
-  @override
   int id() => _id;
 
   @override
@@ -362,15 +301,60 @@ class ServerSideLocalBaseSession extends IBaseSession {
   String authrole() => _authrole;
 
   @override
-  Future send(Object data) async {
+  Serializer serializer() => _serializer;
+
+  @override
+  Future write(Object data) async {
     await _other?.feed(data);
   }
 
   @override
-  Future sendMessage(Message msg) async {
-    await send(_serializer.serialize(msg));
+  Future writeMessage(Message msg) async {
+    await write(_serializer.serialize(msg));
   }
 
   @override
   Future close() async {}
+
+  @override
+  Future<Object> read() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Message> readMessage() {
+    throw UnimplementedError();
+  }
+}
+
+abstract class Peer {
+  Future<Object> read();
+
+  Future<void> write(Object data);
+
+  Future<void> close();
+}
+
+class WebSocketPeer implements Peer {
+  WebSocketPeer(this._channel) : _iterator = StreamIterator(_channel.stream);
+  final WebSocketChannel _channel;
+  final StreamIterator _iterator;
+
+  @override
+  Future<Object> read() async {
+    if (await _iterator.moveNext()) {
+      return _iterator.current;
+    }
+    throw PeerClosedException("Websocket closed");
+  }
+
+  @override
+  Future<void> write(Object data) async {
+    _channel.sink.add(data);
+  }
+
+  @override
+  Future<void> close() async {
+    await _channel.sink.close();
+  }
 }
