@@ -41,25 +41,25 @@ class Realm {
       case Error.id:
         MessageWithRecipient recipient = _dealer.receiveMessage(sessionID, msg);
         var client = _clients[recipient.recipient];
-        client?.sendMessage(recipient.message);
+        await client?.writeMessage(recipient.message);
         break;
 
       case Publish.id:
         var publishMsg = msg as Publish;
         var publication = _broker.receivePublish(sessionID, publishMsg);
 
-        publication.recipients?.forEach((recipient) {
+        publication.recipients?.forEach((recipient) async {
           var client = _clients[recipient];
           var event = publication.event;
           if (event != null) {
-            client?.sendMessage(event);
+            await client?.writeMessage(event);
           }
         });
 
         var ack = publication.ack;
         if (ack != null) {
           var client = _clients[ack.recipient];
-          client?.sendMessage(ack.message);
+          await client?.writeMessage(ack.message);
         }
 
         break;
@@ -72,7 +72,7 @@ class Realm {
         }
 
         var client = _clients[recipient.recipient];
-        client?.sendMessage(recipient.message);
+        await client?.writeMessage(recipient.message);
         break;
 
       case Goodbye.id:
@@ -80,7 +80,7 @@ class Realm {
         _broker.removeSession(sessionID);
         var client = _clients[sessionID];
         var goodbyeMsg = Goodbye({}, closeGoodbyeAndOut);
-        client?.sendMessage(goodbyeMsg);
+        await client?.writeMessage(goodbyeMsg);
         await client?.close();
         _clients.remove(sessionID);
         break;

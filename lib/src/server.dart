@@ -5,6 +5,7 @@ import "package:wampproto/auth.dart";
 import "package:web_socket_channel/io.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
 import "package:xconn/src/acceptor.dart";
+import "package:xconn/src/exception.dart";
 import "package:xconn/src/helpers.dart";
 import "package:xconn/src/types.dart";
 import "package:xconn/xconn.dart";
@@ -53,9 +54,6 @@ class Server {
         _router.attachClient(baseSession);
 
         _handleWebSocket(baseSession, webSocket);
-        acceptor.wsStreamSubscription.onDone(() {
-          _router.detachClient(baseSession);
-        });
       } on Exception catch (err) {
         print(err);
       }
@@ -68,10 +66,14 @@ class Server {
   }
 
   void _handleWebSocket(BaseSession baseSession, WebSocketChannel webSocket) {
-    Future.microtask(() async {
-      while (webSocket.closeCode == null) {
-        var message = await baseSession.receiveMessage();
-        await _router.receiveMessage(baseSession, message);
+    Future(() async {
+      try {
+        while (webSocket.closeCode == null) {
+          var message = await baseSession.readMessage();
+          await _router.receiveMessage(baseSession, message);
+        }
+      } on PeerClosedException {
+        print("Peer closed");
       }
     });
   }

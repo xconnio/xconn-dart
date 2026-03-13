@@ -3,7 +3,6 @@ import "dart:async";
 import "package:wampproto/auth.dart";
 import "package:wampproto/joiner.dart";
 import "package:wampproto/serializers.dart";
-import "package:web_socket_channel/web_socket_channel.dart";
 
 import "package:xconn/src/helpers.dart";
 import "package:xconn/src/types.dart";
@@ -13,42 +12,40 @@ import "package:xconn/src/web_socket_channel_io.dart"
 class WAMPSessionJoiner {
   WAMPSessionJoiner({IClientAuthenticator? authenticator, Serializer? serializer}) {
     _serializer = serializer ?? CBORSerializer();
-    _authenticator = authenticator;
+    _authenticator = authenticator ?? AnonymousAuthenticator("");
   }
 
-  IClientAuthenticator? _authenticator;
+  late IClientAuthenticator _authenticator;
   late Serializer _serializer;
 
   Future<BaseSession> join(String uri, String realm, {Duration? keepAliveInterval}) async {
-    WebSocketChannel channel = webSocketChannel(uri, getSubProtocol(_serializer), keepAliveInterval: keepAliveInterval);
+    final channel = webSocketChannel(uri, getSubProtocol(_serializer));
+
     await channel.ready;
 
-    final joiner = Joiner(realm, serializer: _serializer, authenticator: _authenticator);
-    channel.sink.add(joiner.sendHello());
+    final peer = WebSocketPeer(channel);
 
-    var welcomeCompleter = Completer<BaseSession>();
+    return joinPeer(peer, realm, _serializer, _authenticator);
+  }
+}
 
-    // ignore: cancel_subscriptions
-    late StreamSubscription<dynamic> wsStreamSubscription;
+Future<BaseSession> joinPeer(Peer peer, String realm, Serializer serializer, IClientAuthenticator authenticator) async {
+  final j = Joiner(realm, serializer: serializer, authenticator: authenticator);
 
-    wsStreamSubscription = channel.stream.listen((event) {
-      try {
-        var toSend = joiner.receive(event);
-        if (toSend == null) {
-          wsStreamSubscription
-            ..onData(null)
-            ..onDone(null);
+  final hello = j.sendHello();
+  await peer.write(hello);
 
-          BaseSession baseSession = BaseSession(channel, wsStreamSubscription, joiner.getSessionDetails(), _serializer);
-          welcomeCompleter.complete(baseSession);
-        } else {
-          channel.sink.add(toSend);
-        }
-      } on Exception catch (error) {
-        welcomeCompleter.completeError(error);
-      }
-    });
+  while (true) {
+    final msg = await peer.read();
 
-    return welcomeCompleter.future;
+    final toSend = j.receive(msg);
+
+    if (toSend == null) {
+      final details = j.getSessionDetails();
+
+      return BaseSession(peer, details, serializer);
+    }
+
+    await peer.write(toSend);
   }
 }

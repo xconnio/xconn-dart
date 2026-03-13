@@ -22,7 +22,7 @@ void main() {
     var registerMsg = msg.Register(3, testProcedure);
     await router.receiveMessage(clientSideBase, registerMsg);
 
-    var registered = await clientSideBase.receiveMessage();
+    var registered = await clientSideBase.readMessage();
     expect(registered, isA<msg.Registered>());
 
     registrationID = (registered as msg.Registered).registrationID;
@@ -32,14 +32,14 @@ void main() {
     var callMsg = msg.Call(4, testProcedure);
     await router.receiveMessage(clientSideBase, callMsg);
 
-    var invocation = await clientSideBase.receiveMessage();
+    var invocation = await clientSideBase.readMessage();
     expect(invocation, isA<msg.Invocation>());
 
     var requestID = (invocation as msg.Invocation).requestID;
     var yieldMsg = msg.Yield(requestID);
     await router.receiveMessage(clientSideBase, yieldMsg);
 
-    var result = await clientSideBase.receiveMessage();
+    var result = await clientSideBase.readMessage();
     expect(result, isA<msg.Result>());
   });
 
@@ -47,7 +47,7 @@ void main() {
     var unregisterMsg = msg.Unregister(5, registrationID);
     await router.receiveMessage(clientSideBase, unregisterMsg);
 
-    var unregistered = await clientSideBase.receiveMessage();
+    var unregistered = await clientSideBase.readMessage();
     expect(unregistered, isA<msg.Unregistered>());
   });
 
@@ -57,7 +57,7 @@ void main() {
     var subscribeMsg = msg.Subscribe(6, testTopic);
     await router.receiveMessage(clientSideBase, subscribeMsg);
 
-    var subscribed = await clientSideBase.receiveMessage();
+    var subscribed = await clientSideBase.readMessage();
     expect(subscribed, isA<msg.Subscribed>());
 
     subscriptionID = (subscribed as msg.Subscribed).subscriptionID;
@@ -67,16 +67,16 @@ void main() {
     var publish = msg.Publish(7, testTopic);
     await router.receiveMessage(clientSideBase, publish);
 
-    var event = await clientSideBase.receiveMessage();
+    var event = await clientSideBase.readMessage();
     expect(event, isA<msg.Event>());
 
     var publishAck = msg.Publish(8, testTopic, options: {"acknowledge": true});
     await router.receiveMessage(clientSideBase, publishAck);
 
-    var eventAck = await clientSideBase.receiveMessage();
+    var eventAck = await clientSideBase.readMessage();
     expect(eventAck, isA<msg.Event>());
 
-    var published = await clientSideBase.receiveMessage();
+    var published = await clientSideBase.readMessage();
     expect(published, isA<msg.Published>());
   });
 
@@ -84,7 +84,7 @@ void main() {
     var unsubscribeMsg = msg.Unsubscribe(9, subscriptionID);
     await router.receiveMessage(clientSideBase, unsubscribeMsg);
 
-    var unsubscribed = await clientSideBase.receiveMessage();
+    var unsubscribed = await clientSideBase.readMessage();
     expect(unsubscribed, isA<msg.Unsubscribed>());
   });
 }

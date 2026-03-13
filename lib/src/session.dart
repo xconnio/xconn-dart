@@ -14,12 +14,13 @@ class Session {
     _wampSession = WAMPSession(serializer: _baseSession.serializer());
     Future.microtask(() async {
       while (true) {
-        var message = await _baseSession.receive();
-        unawaited(_processIncomingMessageAsync(_wampSession.receive(message)));
+        try {
+          var message = await _baseSession.read();
+          unawaited(_processIncomingMessageAsync(_wampSession.receive(message)));
+        } on PeerClosedException {
+          _markDisconnected();
+        }
       }
-    });
-    _baseSession.done.then((_) {
-      _markDisconnected();
     });
   }
 
@@ -34,7 +35,7 @@ class Session {
   Future<void> close() async {
     var goodbyeMsg = msg.Goodbye({}, closeRealm);
     var data = _wampSession.sendMessage(goodbyeMsg);
-    _baseSession.send(data);
+    await _baseSession.write(data);
 
     return _goodbyeRequest.future
         .timeout(const Duration(seconds: 10), onTimeout: () async => _baseSession.close())
@@ -92,10 +93,10 @@ class Session {
         bool receiveProgress = message.details["receive_progress"] ?? false;
         bool progress = message.details["progress"] ?? false;
         if (receiveProgress) {
-          void progressFunc(args, kwargs) {
-            var yield = msg.Yield(message.requestID, args: args, kwargs: kwargs, options: {"progress": true});
-            var data = _wampSession.sendMessage(yield);
-            _baseSession.send(data);
+          Future<void> progressFunc(args, kwargs) async {
+            var yieldMsg = msg.Yield(message.requestID, args: args, kwargs: kwargs, options: {"progress": true});
+            var data = _wampSession.sendMessage(yieldMsg);
+            await _baseSession.write(data);
           }
 
           invocation.sendProgress = progressFunc;
@@ -132,7 +133,7 @@ class Session {
           }
 
           Object data = _wampSession.sendMessage(msgToSend);
-          _baseSession.send(data);
+          await _baseSession.write(data);
         });
       }
     } else if (message is msg.Unregistered) {
@@ -241,11 +242,11 @@ class Session {
     return _baseSession.id();
   }
 
-  Future<Result> _call(msg.Call call) {
+  Future<Result> _call(msg.Call call) async {
     var completer = Completer<Result>();
     _callRequests[call.requestID] = completer;
 
-    _baseSession.send(_wampSession.sendMessage(call));
+    await _baseSession.write(_wampSession.sendMessage(call));
 
     return completer.future;
   }
@@ -276,23 +277,23 @@ class Session {
     return _call(call);
   }
 
-  Future<Result> callProgressive(String procedure, Progress Function() progressFunc) {
+  Future<Result> callProgressive(String procedure, Progress Function() progressFunc) async {
     var progress = progressFunc();
     var call = msg.Call(_nextID, procedure, args: progress.args, kwargs: progress.kwargs, options: progress.options);
 
     var completer = Completer<Result>();
     _callRequests[call.requestID] = completer;
 
-    _baseSession.send(_wampSession.sendMessage(call));
+    await _baseSession.write(_wampSession.sendMessage(call));
 
     var callInProgress = progress.options["progress"] ?? false;
-    Future(() {
+    Future(() async {
       while (callInProgress) {
         var prog = progressFunc();
 
         var call1 = msg.Call(call.requestID, procedure, args: prog.args, kwargs: prog.kwargs, options: prog.options);
 
-        _baseSession.send(_wampSession.sendMessage(call1));
+        await _baseSession.write(_wampSession.sendMessage(call1));
 
         callInProgress = prog.options["progress"] ?? false;
       }
@@ -313,7 +314,7 @@ class Session {
     _callRequests[call.requestID] = completer;
     call.options["receive_progress"] = true;
     _progressHandlers[call.requestID] = progressReceiver;
-    _baseSession.send(_wampSession.sendMessage(call));
+    await _baseSession.write(_wampSession.sendMessage(call));
 
     Future<void> sendNextChunk() async {
       var callInProgress = progress.options["progress"] ?? false;
@@ -323,7 +324,7 @@ class Session {
 
         var call1 = msg.Call(call.requestID, procedure, args: prog.args, kwargs: prog.kwargs, options: prog.options);
 
-        _baseSession.send(_wampSession.sendMessage(call1));
+        await _baseSession.write(_wampSession.sendMessage(call1));
 
         callInProgress = prog.options["progress"] ?? false;
       }
@@ -338,24 +339,24 @@ class Session {
     String procedure,
     Future<Result?> Function(Invocation invocation) invocationHandler, {
     Map<String, dynamic>? options,
-  }) {
+  }) async {
     var register = msg.Register(_nextID, procedure, options: options);
 
     var completer = Completer<Registration>();
     _registerRequests[register.requestID] = RegisterRequest(completer, invocationHandler);
 
-    _baseSession.send(_wampSession.sendMessage(register));
+    await _baseSession.write(_wampSession.sendMessage(register));
 
     return completer.future;
   }
 
-  Future<void> unregister(Registration reg) {
+  Future<void> unregister(Registration reg) async {
     var unregister = msg.Unregister(_nextID, reg.registrationID);
 
     var completer = Completer();
     _unregisterRequests[unregister.requestID] = UnregisterRequest(completer, reg.registrationID);
 
-    _baseSession.send(_wampSession.sendMessage(unregister));
+    await _baseSession.write(_wampSession.sendMessage(unregister));
 
     return completer.future;
   }
@@ -365,10 +366,10 @@ class Session {
     List<dynamic>? args,
     Map<String, dynamic>? kwargs,
     Map<String, dynamic>? options,
-  }) {
+  }) async {
     var publish = msg.Publish(_nextID, topic, args: args, kwargs: kwargs, options: options);
 
-    _baseSession.send(_wampSession.sendMessage(publish));
+    await _baseSession.write(_wampSession.sendMessage(publish));
 
     var ack = options?["acknowledge"] ?? false;
     if (ack) {
@@ -377,22 +378,20 @@ class Session {
 
       return completer.future;
     }
-
-    return null;
   }
 
   Future<Subscription> subscribe(String topic, void Function(Event event) eventHandler,
-      {Map<String, dynamic>? options}) {
+      {Map<String, dynamic>? options}) async {
     var subscribe = msg.Subscribe(_nextID, topic, options: options);
 
     var completer = Completer<Subscription>();
     _subscribeRequests[subscribe.requestID] = SubscribeRequest(completer, eventHandler);
-    _baseSession.send(_wampSession.sendMessage(subscribe));
+    await _baseSession.write(_wampSession.sendMessage(subscribe));
 
     return completer.future;
   }
 
-  Future<void> unsubscribe(Subscription sub) {
+  Future<void> unsubscribe(Subscription sub) async {
     final subscriptions = _subscriptions[sub.subscriptionID];
     if (subscriptions != null) {
       subscriptions.remove(sub);
@@ -407,7 +406,7 @@ class Session {
 
     var completer = Completer<void>();
     _unsubscribeRequests[unsubscribe.requestID] = UnsubscribeRequest(completer, sub.subscriptionID);
-    _baseSession.send(_wampSession.sendMessage(unsubscribe));
+    await _baseSession.write(_wampSession.sendMessage(unsubscribe));
 
     return completer.future;
   }

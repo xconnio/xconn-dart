@@ -16,38 +16,44 @@ class WAMPSessionAcceptor {
 
   IServerAuthenticator? _authenticator;
   late Serializer _serializer;
-  late StreamSubscription wsStreamSubscription;
 
   Future<BaseSession> accept(WebSocketChannel ws) async {
     _serializer = getSerializer(ws.protocol);
-    Acceptor acceptor = Acceptor(serializer: _serializer, authenticator: _authenticator);
+    final peer = WebSocketPeer(ws);
 
-    Completer<BaseSession> completer = Completer<BaseSession>();
+    // first message must be HELLO
+    final payload = await peer.read();
+    final hello = _serializer.deserialize(payload) as Hello;
 
-    wsStreamSubscription = ws.stream.listen((message) {
-      try {
-        MapEntry<Object, bool> received = acceptor.receive(message);
-        ws.sink.add(received.key);
-        if (received.value) {
-          if (acceptor.isAborted()) {
-            ws.sink.close();
-            var abortMessage = _serializer.deserialize(received.key) as Abort;
-            completer.completeError(Exception(abortMessage.reason));
-          } else {
-            wsStreamSubscription
-              ..onData(null)
-              ..onDone(null);
+    return acceptPeer(peer, hello, _serializer, _authenticator);
+  }
+}
 
-            var base = BaseSession(ws, wsStreamSubscription, acceptor.getSessionDetails(), _serializer);
-            completer.complete(base);
-          }
-        }
-      } on Exception catch (error) {
-        ws.sink.close();
-        completer.completeError(error);
-      }
-    });
+Future<BaseSession> acceptPeer(
+    Peer peer, Hello hello, Serializer serializer, IServerAuthenticator? authenticator) async {
+  final acceptor = Acceptor(serializer: serializer, authenticator: authenticator);
 
-    return completer.future;
+  var toSend = acceptor.receiveMessage(hello);
+
+  await peer.write(serializer.serialize(toSend!));
+
+  if (toSend.messageType() == Welcome.id) {
+    final details = acceptor.getSessionDetails();
+    return BaseSession(peer, details, serializer);
+  }
+
+  while (true) {
+    final payload = await peer.read();
+
+    final result = acceptor.receive(payload);
+    final message = result.key;
+    final welcomed = result.value;
+
+    await peer.write(message);
+
+    if (welcomed) {
+      final details = acceptor.getSessionDetails();
+      return BaseSession(peer, details, serializer);
+    }
   }
 }
