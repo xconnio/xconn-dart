@@ -304,33 +304,37 @@ class Session {
 
   Future<Result> callProgressiveProgress(
     String procedure,
-    Progress Function() progressSender,
-    Function(Result result) progressReceiver,
+    Stream<Progress> progressStream,
+    void Function(Result result) progressReceiver,
   ) async {
-    var progress = progressSender();
-    var call = msg.Call(_nextID, procedure, args: progress.args, kwargs: progress.kwargs, options: progress.options);
-
-    var completer = Completer<Result>();
+    final firstProgress = await progressStream.first;
+    final call = msg.Call(
+      _nextID,
+      procedure,
+      args: firstProgress.args,
+      kwargs: firstProgress.kwargs,
+      options: {
+        ...firstProgress.options,
+        "receive_progress": true,
+      },
+    );
+    final completer = Completer<Result>();
     _callRequests[call.requestID] = completer;
-    call.options["receive_progress"] = true;
     _progressHandlers[call.requestID] = progressReceiver;
     await _baseSession.write(_wampSession.sendMessage(call));
 
-    Future<void> sendNextChunk() async {
-      var callInProgress = progress.options["progress"] ?? false;
-
-      while (callInProgress) {
-        var prog = progressSender();
-
-        var call1 = msg.Call(call.requestID, procedure, args: prog.args, kwargs: prog.kwargs, options: prog.options);
-
-        await _baseSession.write(_wampSession.sendMessage(call1));
-
-        callInProgress = prog.options["progress"] ?? false;
+    progressStream.listen((prog) async {
+      if (prog.options["progress"] == true) {
+        final callChunk = msg.Call(
+          call.requestID,
+          procedure,
+          args: prog.args,
+          kwargs: prog.kwargs,
+          options: prog.options,
+        );
+        await _baseSession.write(_wampSession.sendMessage(callChunk));
       }
-    }
-
-    sendNextChunk();
+    });
 
     return completer.future;
   }
