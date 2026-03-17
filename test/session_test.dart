@@ -74,8 +74,11 @@ void main() {
     var result = await session.callProgress("foo.bar.progress", (Result result) {
       var progress = result.args[0];
 
-      // Collect received progress
-      progressUpdates.add(progress);
+      var prog = result.details["progress"] ?? false;
+      if (prog) {
+        // Collect received progress
+        progressUpdates.add(progress);
+      }
     });
 
     // Verify progressive updates received correctly

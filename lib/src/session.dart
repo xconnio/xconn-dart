@@ -70,9 +70,13 @@ class Session {
       if (progress) {
         var progressHandler = _progressHandlers[message.requestID];
         if (progressHandler != null) {
-          progressHandler(Result(args: message.args, kwargs: message.kwargs));
+          progressHandler(Result(args: message.args, kwargs: message.kwargs, details: message.details));
         }
       } else {
+        var progressHandler = _progressHandlers[message.requestID];
+        if (progressHandler != null) {
+          progressHandler(Result(args: message.args, kwargs: message.kwargs, details: message.details));
+        }
         var request = _callRequests.remove(message.requestID);
         if (request != null) {
           request.complete(Result(args: message.args, kwargs: message.kwargs, details: message.details));
@@ -302,37 +306,34 @@ class Session {
     return completer.future;
   }
 
-  Future<Result> callProgressiveProgress(
-    String procedure,
-    Progress Function() progressSender,
-    Function(Result result) progressReceiver,
-  ) async {
-    var progress = progressSender();
-    var call = msg.Call(_nextID, procedure, args: progress.args, kwargs: progress.kwargs, options: progress.options);
+  Future<ProgressiveResult> callProgressiveProgress(
+    String procedure, {
+    List<dynamic>? args,
+    Map<String, dynamic>? kwargs,
+    Map<String, dynamic>? options,
+  }) async {
+    var requestID = _nextID;
 
-    var completer = Completer<Result>();
-    _callRequests[call.requestID] = completer;
+    var call = msg.Call(requestID, procedure, args: args, kwargs: kwargs, options: options);
     call.options["receive_progress"] = true;
-    _progressHandlers[call.requestID] = progressReceiver;
+    call.options["progress"] = true;
+
+    var controller = StreamController<Result>.broadcast();
+
+    _progressHandlers[requestID] = (Result result) {
+      if (!controller.isClosed) {
+        controller.add(result);
+      }
+
+      if (!(result.details["progress"] ?? false)) {
+        _progressHandlers.remove(requestID);
+        controller.close();
+      }
+    };
+
     await _baseSession.write(_wampSession.sendMessage(call));
 
-    Future<void> sendNextChunk() async {
-      var callInProgress = progress.options["progress"] ?? false;
-
-      while (callInProgress) {
-        var prog = progressSender();
-
-        var call1 = msg.Call(call.requestID, procedure, args: prog.args, kwargs: prog.kwargs, options: prog.options);
-
-        await _baseSession.write(_wampSession.sendMessage(call1));
-
-        callInProgress = prog.options["progress"] ?? false;
-      }
-    }
-
-    sendNextChunk();
-
-    return completer.future;
+    return ProgressiveResult(requestID, procedure, _baseSession, _wampSession, controller);
   }
 
   Future<Registration> register(

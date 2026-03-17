@@ -358,3 +358,26 @@ class WebSocketPeer implements Peer {
     await _channel.sink.close();
   }
 }
+
+class ProgressiveResult {
+  ProgressiveResult(this._requestID, this._procedure, this.baseSession, this.wampSession, this._controller);
+
+  final int _requestID;
+  final String _procedure;
+  final IBaseSession baseSession;
+  late WAMPSession wampSession;
+  final StreamController<Result> _controller;
+
+  Future<void> sendProgress(Progress progress) async {
+    var call = Call(
+      _requestID,
+      _procedure,
+      args: progress.args,
+      kwargs: progress.kwargs,
+      options: progress.options,
+    );
+    await baseSession.write(wampSession.sendMessage(call));
+  }
+
+  Stream<Result> receive() => _controller.stream;
+}
