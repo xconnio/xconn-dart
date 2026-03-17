@@ -1,35 +1,44 @@
+import "dart:async";
 import "package:xconn/src/types.dart";
 import "package:xconn/xconn.dart";
 
 const procedureProgress = "io.xconn.progress.mirror";
 
 Future<void> main() async {
-  var caller = await connectAnonymous("ws://localhost:8080/ws", "realm1");
+  final caller = await connectAnonymous("ws://localhost:8080/ws", "realm1");
 
   const totalChunks = 6;
   var chunkIndex = 0;
 
   print("Starting file upload...");
 
-  final result = await caller.callProgressiveProgress(procedureProgress, () {
-    final options = <String, dynamic>{};
+  // Create a stream controller for progressive chunks
+  final controller = StreamController<Progress>();
 
-    // Mark the last chunk as non-progressive
-    options["progress"] = chunkIndex == totalChunks - 1 ? false : true;
+  // Kick off the progressive call
+  final result = await caller.callProgressiveProgress(
+    procedureProgress,
+    controller.stream,
+    (Result result) {
+      print("Progress update: chunk ${result.args[0]} acknowledged by server");
+    },
+  );
 
-    // Simulate sending each chunk
+  // Simulate sending chunks
+  while (chunkIndex < totalChunks) {
+    final options = <String, dynamic>{
+      "progress": chunkIndex == totalChunks - 1 ? false : true,
+    };
+
     print("Uploading chunk $chunkIndex...");
-    final args = [chunkIndex];
+    controller.add(Progress(args: [chunkIndex], options: options));
 
     chunkIndex++;
-
-    return Progress(args: args, options: options);
-  }, (Result result) {
-    // final chunkIndex = result.args[0] as int;
-    print("Progress update: chunk ${result.args[0]} acknowledged by server");
-  });
+    await Future.delayed(const Duration(milliseconds: 100)); // simulate delay
+  }
 
   print("Final result: ${result.args[0]}");
 
+  await controller.close();
   await caller.close();
 }
