@@ -7,29 +7,32 @@ Future<void> main() async {
   var caller = await connectAnonymous("ws://localhost:8080/ws", "realm1");
 
   const totalChunks = 6;
-  var chunkIndex = 0;
 
   print("Starting file upload...");
 
-  final result = await caller.callProgressiveProgress(procedureProgress, () {
+  final progressive = await caller.callProgressiveProgress(procedureProgress, args: [0], kwargs: {}, options: {});
+
+  for (var chunkIndex = 1; chunkIndex < totalChunks; chunkIndex++) {
     final options = <String, dynamic>{};
+    options["progress"] = chunkIndex < totalChunks - 1;
 
-    // Mark the last chunk as non-progressive
-    options["progress"] = chunkIndex == totalChunks - 1 ? false : true;
+    final progress = Progress(args: [chunkIndex], options: options);
 
-    // Simulate sending each chunk
-    print("Uploading chunk $chunkIndex...");
-    final args = [chunkIndex];
+    await progressive.sendProgress(progress);
 
-    chunkIndex++;
+    print("Sent chunk $chunkIndex...");
+  }
 
-    return Progress(args: args, options: options);
-  }, (Result result) {
-    // final chunkIndex = result.args[0] as int;
-    print("Progress update: chunk ${result.args[0]} acknowledged by server");
-  });
+  await for (final result in progressive.receive()) {
+    if (result.details["progress"] ?? false) {
+      final currentChunk = result.args[0] as int;
+      print("Progress update: chunk $currentChunk acknowledged by server");
+    } else {
+      print(result.args[0]);
+    }
+  }
 
-  print("Final result: ${result.args[0]}");
+  print("Upload complete.");
 
   await caller.close();
 }
