@@ -11,7 +11,7 @@ Future<void> main() async {
 
   print("Starting file upload...");
 
-  final result = await caller.callProgressiveProgress(procedureProgress, () {
+  final result = await caller.callProgressiveProgress(procedureProgress, () async {
     final options = <String, dynamic>{};
 
     // Mark the last chunk as non-progressive
