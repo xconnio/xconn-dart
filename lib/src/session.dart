@@ -304,10 +304,10 @@ class Session {
 
   Future<Result> callProgressiveProgress(
     String procedure,
-    Progress Function() progressSender,
+    Future<Progress> Function() progressSender,
     Function(Result result) progressReceiver,
   ) async {
-    var progress = progressSender();
+    var progress = await progressSender();
     var call = msg.Call(_nextID, procedure, args: progress.args, kwargs: progress.kwargs, options: progress.options);
 
     var completer = Completer<Result>();
@@ -320,7 +320,7 @@ class Session {
       var callInProgress = progress.options["progress"] ?? false;
 
       while (callInProgress) {
-        var prog = progressSender();
+        var prog = await progressSender();
 
         var call1 = msg.Call(call.requestID, procedure, args: prog.args, kwargs: prog.kwargs, options: prog.options);
 
