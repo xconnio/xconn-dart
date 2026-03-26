@@ -18,7 +18,8 @@ class Session {
           var message = await _baseSession.read();
           unawaited(_processIncomingMessageAsync(_wampSession.receive(message)));
         } on PeerClosedException {
-          _markDisconnected();
+          await _markDisconnected();
+          break;
         }
       }
     });
@@ -217,13 +218,13 @@ class Session {
           throw ProtocolError(wampErrorString(message));
       }
     } else if (message is msg.Goodbye) {
-      _markDisconnected();
+      await _markDisconnected();
     } else {
       throw ProtocolError("Unexpected message type ${message.runtimeType}");
     }
   }
 
-  void _markDisconnected() {
+  Future<void> _markDisconnected() async {
     if (!_isConnected) {
       return;
     }
@@ -236,6 +237,8 @@ class Session {
     if (!_goodbyeRequest.isCompleted) {
       _goodbyeRequest.complete();
     }
+
+    await _baseSession.close();
   }
 
   int id() {
