@@ -14,10 +14,7 @@ class Transport {
   Transport({required this.type, required this.port});
 
   factory Transport.fromMap(Map<String, dynamic> map) {
-    return Transport(
-      type: map["type"],
-      port: map["port"],
-    );
+    return Transport(type: map["type"], port: map["port"]);
   }
 
   final String type;
@@ -25,11 +22,7 @@ class Transport {
 }
 
 abstract class Authenticator {
-  Authenticator({
-    required this.authid,
-    required this.realm,
-    required this.role,
-  });
+  Authenticator({required this.authid, required this.realm, required this.role});
 
   final String authid;
   final String realm;
@@ -40,11 +33,7 @@ class AnonymousAuth extends Authenticator {
   AnonymousAuth({required super.authid, required super.realm, required super.role});
 
   factory AnonymousAuth.fromMap(Map<String, dynamic> map) {
-    return AnonymousAuth(
-      authid: map["authid"],
-      realm: map["realm"],
-      role: map["role"],
-    );
+    return AnonymousAuth(authid: map["authid"], realm: map["realm"], role: map["role"]);
   }
 }
 
@@ -52,12 +41,7 @@ class CRAAuth extends Authenticator {
   CRAAuth({required super.authid, required super.realm, required super.role, required this.secret});
 
   factory CRAAuth.fromMap(Map<String, dynamic> map) {
-    return CRAAuth(
-      authid: map["authid"],
-      realm: map["realm"],
-      role: map["role"],
-      secret: map["secret"],
-    );
+    return CRAAuth(authid: map["authid"], realm: map["realm"], role: map["role"], secret: map["secret"]);
   }
 
   final String secret;
@@ -67,12 +51,7 @@ class TicketAuth extends Authenticator {
   TicketAuth({required super.authid, required super.realm, required super.role, required this.ticket});
 
   factory TicketAuth.fromMap(Map<String, dynamic> map) {
-    return TicketAuth(
-      authid: map["authid"],
-      realm: map["realm"],
-      role: map["role"],
-      ticket: map["ticket"],
-    );
+    return TicketAuth(authid: map["authid"], realm: map["realm"], role: map["role"], ticket: map["ticket"]);
   }
 
   final String ticket;
@@ -108,46 +87,27 @@ class Authenticators {
 }
 
 class Config {
-  Config({
-    required this.version,
-    required this.realms,
-    required this.transports,
-    required this.authenticators,
-  });
+  Config({required this.version, required this.realms, required this.transports, required this.authenticators});
 
   factory Config.fromMap(Map<String, dynamic> map) {
     return Config(
       version: map["version"],
-      realms: (map["realms"] as List)
-          .map(
-            (realm) => Realm.fromMap(Map<String, dynamic>.from(realm)),
-          )
-          .toList(),
+      realms: (map["realms"] as List).map((realm) => Realm.fromMap(Map<String, dynamic>.from(realm))).toList(),
       transports: (map["transports"] as List)
-          .map(
-            (transport) => Transport.fromMap(Map<String, dynamic>.from(transport)),
-          )
+          .map((transport) => Transport.fromMap(Map<String, dynamic>.from(transport)))
           .toList(),
       authenticators: Authenticators(
         anonymousAuths: ((map["authenticators"] as Map)[anonymous] as List)
-            .map(
-              (auth) => AnonymousAuth.fromMap(Map<String, dynamic>.from(auth)),
-            )
+            .map((auth) => AnonymousAuth.fromMap(Map<String, dynamic>.from(auth)))
             .toList(),
         craAuths: ((map["authenticators"] as Map)[wampCRA] as List)
-            .map(
-              (auth) => CRAAuth.fromMap(Map<String, dynamic>.from(auth)),
-            )
+            .map((auth) => CRAAuth.fromMap(Map<String, dynamic>.from(auth)))
             .toList(),
         ticketAuths: ((map["authenticators"] as Map)[ticket] as List)
-            .map(
-              (auth) => TicketAuth.fromMap(Map<String, dynamic>.from(auth)),
-            )
+            .map((auth) => TicketAuth.fromMap(Map<String, dynamic>.from(auth)))
             .toList(),
         cryptoSignAuths: ((map["authenticators"] as Map)[cryptosign] as List)
-            .map(
-              (auth) => CryptoSignAuth.fromMap(Map<String, dynamic>.from(auth)),
-            )
+            .map((auth) => CryptoSignAuth.fromMap(Map<String, dynamic>.from(auth)))
             .toList(),
       ),
     );

@@ -78,13 +78,10 @@ class BaseSession implements IBaseSession {
 }
 
 class Result {
-  Result({
-    List<dynamic>? args,
-    Map<String, dynamic>? kwargs,
-    Map<String, dynamic>? details,
-  })  : args = args ?? [],
-        kwargs = kwargs ?? {},
-        details = details ?? {};
+  Result({List<dynamic>? args, Map<String, dynamic>? kwargs, Map<String, dynamic>? details})
+    : args = args ?? [],
+      kwargs = kwargs ?? {},
+      details = details ?? {};
 
   final List<dynamic> args;
   final Map<String, dynamic> kwargs;
@@ -110,13 +107,10 @@ class RegisterRequest {
 }
 
 class Invocation {
-  Invocation({
-    List<dynamic>? args,
-    Map<String, dynamic>? kwargs,
-    Map<String, dynamic>? details,
-  })  : args = args ?? [],
-        kwargs = kwargs ?? {},
-        details = details ?? {};
+  Invocation({List<dynamic>? args, Map<String, dynamic>? kwargs, Map<String, dynamic>? details})
+    : args = args ?? [],
+      kwargs = kwargs ?? {},
+      details = details ?? {};
 
   final List<dynamic> args;
   final Map<String, dynamic> kwargs;
@@ -154,13 +148,10 @@ class SubscribeRequest {
 }
 
 class Event {
-  Event({
-    List<dynamic>? args,
-    Map<String, dynamic>? kwargs,
-    Map<String, dynamic>? details,
-  })  : args = args ?? [],
-        kwargs = kwargs ?? {},
-        details = details ?? {};
+  Event({List<dynamic>? args, Map<String, dynamic>? kwargs, Map<String, dynamic>? details})
+    : args = args ?? [],
+      kwargs = kwargs ?? {},
+      details = details ?? {};
 
   final List<dynamic> args;
   final Map<String, dynamic> kwargs;
@@ -175,13 +166,10 @@ class UnsubscribeRequest {
 }
 
 class Progress {
-  Progress({
-    List<dynamic>? args,
-    Map<String, dynamic>? kwargs,
-    Map<String, dynamic>? options,
-  })  : args = args ?? [],
-        kwargs = kwargs ?? {},
-        options = options ?? {};
+  Progress({List<dynamic>? args, Map<String, dynamic>? kwargs, Map<String, dynamic>? options})
+    : args = args ?? [],
+      kwargs = kwargs ?? {},
+      options = options ?? {};
 
   final List<dynamic> args;
   final Map<String, dynamic> kwargs;
@@ -189,12 +177,9 @@ class Progress {
 }
 
 class ClientConfig {
-  ClientConfig({
-    IClientAuthenticator? authenticator,
-    Serializer? serializer,
-    this.keepAliveInterval,
-  })  : authenticator = authenticator ?? AnonymousAuthenticator(""),
-        serializer = serializer ?? CBORSerializer();
+  ClientConfig({IClientAuthenticator? authenticator, Serializer? serializer, this.keepAliveInterval})
+    : authenticator = authenticator ?? AnonymousAuthenticator(""),
+      serializer = serializer ?? CBORSerializer();
 
   final IClientAuthenticator authenticator;
   final Serializer serializer;

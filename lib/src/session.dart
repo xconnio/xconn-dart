@@ -129,8 +129,12 @@ class Session {
           } on ApplicationError catch (e) {
             msgToSend = msg.Error(message.messageType(), message.requestID, e.message, args: e.args, kwargs: e.kwargs);
           } on Exception catch (e) {
-            msgToSend =
-                msg.Error(message.messageType(), message.requestID, "wamp.error.runtime_error", args: [e.toString()]);
+            msgToSend = msg.Error(
+              message.messageType(),
+              message.requestID,
+              "wamp.error.runtime_error",
+              args: [e.toString()],
+            );
           }
 
           Object data = _wampSession.sendMessage(msgToSend);
@@ -174,9 +178,7 @@ class Session {
       switch (message.msgType) {
         case msg.Call.id:
           var callRequest = _callRequests.remove(message.requestID);
-          callRequest?.completeError(
-            ApplicationError(message.uri, args: message.args, kwargs: message.kwargs),
-          );
+          callRequest?.completeError(ApplicationError(message.uri, args: message.args, kwargs: message.kwargs));
           break;
 
         case msg.Register.id:
@@ -209,9 +211,7 @@ class Session {
 
         case msg.Publish.id:
           var publishRequest = _publishRequests.remove(message.requestID);
-          publishRequest?.completeError(
-            ApplicationError(message.uri, args: message.args, kwargs: message.kwargs),
-          );
+          publishRequest?.completeError(ApplicationError(message.uri, args: message.args, kwargs: message.kwargs));
           break;
 
         default:
@@ -383,8 +383,11 @@ class Session {
     }
   }
 
-  Future<Subscription> subscribe(String topic, void Function(Event event) eventHandler,
-      {Map<String, dynamic>? options}) async {
+  Future<Subscription> subscribe(
+    String topic,
+    void Function(Event event) eventHandler, {
+    Map<String, dynamic>? options,
+  }) async {
     var subscribe = msg.Subscribe(_nextID, topic, options: options);
 
     var completer = Completer<Subscription>();

@@ -4,7 +4,9 @@ import "package:xconn/xconn.dart";
 
 class AuthenticationExample {
   Future<Session> connect(String url, String realm, IClientAuthenticator authenticator, Serializer serializer) {
-    var client = Client(config: ClientConfig(authenticator: authenticator, serializer: serializer));
+    var client = Client(
+      config: ClientConfig(authenticator: authenticator, serializer: serializer),
+    );
     return client.connect(url, realm);
   }
 

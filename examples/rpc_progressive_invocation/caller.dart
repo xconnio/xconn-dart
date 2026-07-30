@@ -11,23 +11,20 @@ Future<void> main() async {
 
   print("Starting file upload...");
 
-  final result = await caller.callProgressive(
-    procedureProgressUpload,
-    () {
-      final options = <String, dynamic>{};
+  final result = await caller.callProgressive(procedureProgressUpload, () {
+    final options = <String, dynamic>{};
 
-      // Mark the last chunk as non-progressive
-      options["progress"] = chunkIndex == totalChunks - 1 ? false : true;
+    // Mark the last chunk as non-progressive
+    options["progress"] = chunkIndex == totalChunks - 1 ? false : true;
 
-      // Simulate sending each chunk
-      print("Uploading chunk $chunkIndex...");
-      final args = [chunkIndex];
+    // Simulate sending each chunk
+    print("Uploading chunk $chunkIndex...");
+    final args = [chunkIndex];
 
-      chunkIndex++;
+    chunkIndex++;
 
-      return Progress(args: args, options: options);
-    },
-  );
+    return Progress(args: args, options: options);
+  });
 
   print("Final result: ${result.args[0]}");
 

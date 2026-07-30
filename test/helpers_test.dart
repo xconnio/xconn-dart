@@ -74,8 +74,13 @@ void main() {
     expect(errKwArgsString, "wamp.error.no_such_procedure: key=value");
 
     // with args and kwargs
-    final errorArgsKwArgs =
-        Error(Register.id, 1, "wamp.error.no_such_procedure", args: [1, "two"], kwargs: {"key": "value"});
+    final errorArgsKwArgs = Error(
+      Register.id,
+      1,
+      "wamp.error.no_such_procedure",
+      args: [1, "two"],
+      kwargs: {"key": "value"},
+    );
     var errArgsKwArgsString = wampErrorString(errorArgsKwArgs);
     expect(errArgsKwArgsString, "wamp.error.no_such_procedure: 1, two: key=value");
   });
