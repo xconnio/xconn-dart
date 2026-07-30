@@ -4,11 +4,13 @@ version: 0.1.0
 repository: https://github.com/xconnio/xconn-dart
 
 environment:
-  sdk: ">=2.17.0 <4.0.0"
+  sdk: ">=3.8.1 <4.0.0"
 
 # Add regular dependencies here.
 dependencies:
   args: ^2.5.0
+  dart_quic: ^0.1.0
+  ffi: ^2.1.4
   wampproto:
     # ignore: invalid_dependency
     git: https://github.com/xconnio/wampproto-dart/

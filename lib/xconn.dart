@@ -7,8 +7,9 @@ export "package:wampproto/serializers.dart" show CBORSerializer, JSONSerializer,
 
 export "src/client.dart" show Client, connectAnonymous, connectCRA, connectCryptosign, connectTicket;
 export "src/exception.dart" show ApplicationError, ProtocolError;
+export "src/joiner.dart" show joinPeer;
+export "src/quic.dart" show QUICConnection, QUICDialerConfig, QUICSession, connectQUIC;
 export "src/router.dart" show Router;
 export "src/server.dart" show Server;
 export "src/session.dart" show Session;
-export "src/types.dart" show ClientConfig, Event, Invocation, Registration, Result, Subscription, Peer;
-export "src/joiner.dart" show joinPeer;
+export "src/types.dart" show ClientConfig, Event, Invocation, Peer, Registration, Result, Subscription;

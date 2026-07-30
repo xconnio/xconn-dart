@@ -9,13 +9,10 @@ Future<void> main() async {
   var session = await client.connect("ws://localhost:8080/ws", "realm1");
 
   // Call procedure "io.xconn.progress.download"
-  var result = await session.callProgress(
-    procedureDownload,
-    (Result result) {
-      var progress = result.args[0]; // Current progress
-      print("Download progress: $progress%");
-    },
-  );
+  var result = await session.callProgress(procedureDownload, (Result result) {
+    var progress = result.args[0]; // Current progress
+    print("Download progress: $progress%");
+  });
 
   print(result.args[0]);
 

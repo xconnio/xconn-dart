@@ -30,7 +30,11 @@ class WAMPSessionAcceptor {
 }
 
 Future<BaseSession> acceptPeer(
-    Peer peer, Hello hello, Serializer serializer, IServerAuthenticator? authenticator) async {
+  Peer peer,
+  Hello hello,
+  Serializer serializer,
+  IServerAuthenticator? authenticator,
+) async {
   final acceptor = Acceptor(serializer: serializer, authenticator: authenticator);
 
   var toSend = acceptor.receiveMessage(hello);
