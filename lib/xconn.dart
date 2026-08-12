@@ -12,4 +12,4 @@ export "src/quic.dart" show QUICConnection, QUICDialerConfig, QUICSession, conne
 export "src/router.dart" show Router;
 export "src/server.dart" show Server;
 export "src/session.dart" show Session;
-export "src/types.dart" show ClientConfig, Event, Invocation, Peer, Registration, Result, Subscription;
+export "src/types.dart" show BaseSession, ClientConfig, Event, Invocation, Peer, Registration, Result, Subscription;
