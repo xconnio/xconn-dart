@@ -17,7 +17,7 @@ class Session {
         try {
           var message = await _baseSession.read();
           unawaited(_processIncomingMessageAsync(_wampSession.receive(message)));
-        } on PeerClosedException {
+        } on Exception {
           await _markDisconnected();
           break;
         }
